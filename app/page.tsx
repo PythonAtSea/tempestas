@@ -22,6 +22,7 @@ import {
   Check,
   Siren,
   TriangleAlert,
+  Heart,
 } from "lucide-react";
 import {
   ChartContainer,
@@ -49,6 +50,13 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import zipcodes from "zipcodes-us";
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select";
 
 const chartConfig = {
   temp: {
@@ -196,6 +204,8 @@ export default function Page() {
   const [shareIcon, setShareIcon] = useState(<Copy />);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [zip, setZip] = useState("");
+  const [pastDays, setPastDays] = useState("0");
+  const [futureDays, setFutureDays] = useState("3");
   type weatherDataType = Array<{
     time: Date;
     temp: number;
@@ -220,7 +230,7 @@ export default function Page() {
   const fetchWeather = useCallback(() => {
     if (lat === null || lon === null) return;
     fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,precipitation_sum,windspeed_10m_max,windgusts_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&current=precipitation,weathercode,windspeed,winddirection,temperature,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m&past_days=0&forecast_days=3&minutely_15=temperature_2m,weather_code,precipitation_probability,precipitation,apparent_temperature,cloud_cover,wind_speed_10m,wind_gusts_10m,cloud_cover`
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,precipitation_sum,windspeed_10m_max,windgusts_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&current=precipitation,weathercode,windspeed,winddirection,temperature,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m&past_days=${pastDays}&forecast_days=${futureDays}&minutely_15=temperature_2m,weather_code,precipitation_probability,precipitation,apparent_temperature,cloud_cover,wind_speed_10m,wind_gusts_10m,cloud_cover`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -271,7 +281,8 @@ export default function Page() {
       .catch((error) => {
         console.error("Error fetching weather alerts:", error);
       });
-  }, [lat, lon]);
+    setCurrentTime(new Date(Date.now()));
+  }, [futureDays, lat, lon, pastDays]);
 
   const { gradientStops, yDomain } = useMemo(() => {
     if (!futureWeather || futureWeather.length === 0) {
@@ -342,7 +353,7 @@ export default function Page() {
   useEffect(() => {
     const interval = setInterval(
       () => setCurrentTime(new Date()),
-      15 * 60 * 1000
+      5 * 60 * 1000
     );
     return () => clearInterval(interval);
   }, []);
@@ -561,7 +572,7 @@ export default function Page() {
           </DialogContent>
         </Dialog>
       </header>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 p-4">
+      <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {weatherAlerts.length > 0 &&
           weatherAlerts.map((alert, idx) => (
             <Card
@@ -617,137 +628,157 @@ export default function Page() {
               </CardContent>
             </Card>
           ))}
-        <div className="col-span-1 flex flex-col gap-4 row-span-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Location</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {lat && lon ? (
-                <div className="space-y-2">
-                  <div className="flex flex-col space-y-2 mb-6">
-                    <Label htmlFor="zip">ZIP Code:</Label>
-                    <Input
-                      id="zip"
-                      value={zip}
-                      onChange={(e) => setZip(e.target.value)}
-                      className="w-fill"
-                      placeholder="US Zip code"
-                    />
-                    <Label htmlFor="latitude">Latitude:</Label>
-                    <Input
-                      id="latitude"
-                      value={lat}
-                      onChange={(e) => setLat(e.target.value)}
-                      className="w-fill"
-                    />
-                  </div>
-                  <div className="flex flex-col space-y-2">
-                    <Label htmlFor="longitude">Longitude:</Label>
-                    <Input
-                      id="longitude"
-                      value={lon}
-                      onChange={(e) => setLon(e.target.value)}
-                      className="w-fill"
-                    />
-                  </div>
-                  <Button
-                    disabled={!locationLat || !locationLon}
-                    className="w-full"
-                    variant={locationSupported ? "default" : "destructive"}
-                    onClick={() => {
-                      if (locationLat) setLat(locationLat);
-                      if (locationLon) setLon(locationLon);
-                    }}
+
+        <Card className="col-span-1 row-span-2 flex flex-col">
+          <CardHeader>
+            <CardTitle>Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 flex-grow">
+            <div className="space-y-2">
+              <div className="flex flex-col space-y-2 mb-6">
+                <Label htmlFor="zip">ZIP Code:</Label>
+                <Input
+                  id="zip"
+                  value={zip}
+                  onChange={(e) => setZip(e.target.value)}
+                  className="w-fill"
+                  placeholder="US Zip code"
+                />
+              </div>
+              <div className="flex flex-col space-y-2 mb-6">
+                <Label htmlFor="latitude">Latitude:</Label>
+                <Input
+                  id="latitude"
+                  value={lat}
+                  onChange={(e) => setLat(e.target.value)}
+                  className="w-fill"
+                />
+              </div>
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="longitude">Longitude:</Label>
+                <Input
+                  id="longitude"
+                  value={lon}
+                  onChange={(e) => setLon(e.target.value)}
+                  className="w-fill"
+                />
+              </div>
+              <Button
+                disabled={!locationLat || !locationLon}
+                className="w-full"
+                variant={locationSupported ? "default" : "destructive"}
+                onClick={() => {
+                  if (locationLat) setLat(locationLat);
+                  if (locationLon) setLon(locationLon);
+                }}
+              >
+                {locationSupported &&
+                  (!locationLat || !locationLon ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <LocateFixed />
+                  ))}
+                {locationSupported ? (
+                  "Current Location"
+                ) : (
+                  <>
+                    <OctagonAlert /> Location Services Disabled
+                  </>
+                )}
+              </Button>
+              <Button
+                className="w-full"
+                variant="secondary"
+                onClick={() => {
+                  setLat("44.3804303");
+                  setLon("-73.2276389");
+                }}
+              >
+                Hack Club HQ
+              </Button>
+              <Button
+                className="w-full"
+                variant="secondary"
+                onClick={() => {
+                  setLat("0");
+                  setLon("0");
+                }}
+              >
+                Null Island
+              </Button>
+              <Button
+                className="w-full"
+                variant="secondary"
+                onClick={() => {
+                  setLat("42.4337815");
+                  setLon("-83.9845105");
+                }}
+              >
+                Hell, Michigan
+              </Button>
+              <Button
+                className="w-full"
+                variant="secondary"
+                onClick={() => {
+                  setLat("37.826835");
+                  setLon("-122.4236893");
+                }}
+              >
+                Alcatraz
+              </Button>
+              <div className="flex flex-row items-center space-x-2 mt-4">
+                <div className="flex flex-col space-y-2 w-full">
+                  <Label htmlFor="pastDays" className="whitespace-nowrap">
+                    Past days:
+                  </Label>
+                  <Select
+                    onValueChange={(value) => setPastDays(value)}
+                    value={pastDays}
                   >
-                    {locationSupported &&
-                      (!locationLat || !locationLon ? (
-                        <Loader2 className="animate-spin" />
-                      ) : (
-                        <LocateFixed />
-                      ))}
-                    {locationSupported ? (
-                      "Current Location"
-                    ) : (
-                      <>
-                        <OctagonAlert /> Location Services Disabled
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    className="w-full"
-                    variant="secondary"
-                    onClick={() => {
-                      setLat("44.3804303");
-                      setLon("-73.2276389");
-                    }}
-                  >
-                    Hack Club HQ
-                  </Button>
-                  <Button
-                    className="w-full"
-                    variant="secondary"
-                    onClick={() => {
-                      setLat("0");
-                      setLon("0");
-                    }}
-                  >
-                    Null Island
-                  </Button>
-                  <Button
-                    className="w-full"
-                    variant="secondary"
-                    onClick={() => {
-                      setLat("42.4337815");
-                      setLon("-83.9845105");
-                    }}
-                  >
-                    Hell, Michigan
-                  </Button>
-                  <Button
-                    className="w-full"
-                    variant="secondary"
-                    onClick={() => {
-                      setLat("37.826835");
-                      setLon("-122.4236893");
-                    }}
-                  >
-                    Alcatraz
-                  </Button>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Past days" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">0</SelectItem>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="6">6</SelectItem>
+                      <SelectItem value="7">7</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ) : (
-                <Skeleton className="h-14" />
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle suppressHydrationWarning>
-                Current Weather (as of {currentTime.toLocaleTimeString()})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {rawData && rawData.current ? (
-                <>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Thermometer />
-                    <span>{`${rawData.current.temperature}°F, feels like ${rawData.current.apparent_temperature}°F`}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 mb-2">
-                    {weatherIcon} <span>{weatherDescription}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Wind />
-                    <span>{`${rawData.current.wind_speed_10m} mph, gusting to ${rawData.current.wind_gusts_10m}`}</span>
-                  </div>
-                </>
-              ) : (
-                <Skeleton className="h-14" />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-        <Card className="col-span-1 lg:col-span-2 lg:row-span-2">
+                <div className="flex flex-col space-y-2 w-full">
+                  <Label htmlFor="futureDays" className="whitespace-nowrap">
+                    Future days:
+                  </Label>
+                  <Select
+                    onValueChange={(value) => setFutureDays(value)}
+                    value={futureDays}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Future days" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">0</SelectItem>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="6">6</SelectItem>
+                      <SelectItem value="7">7</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1 md:col-span-1 lg:col-span-2 row-span-2">
           <CardHeader>
             <CardTitle>Future weather</CardTitle>
           </CardHeader>
@@ -897,7 +928,89 @@ export default function Page() {
             )}
           </CardContent>
         </Card>
-      </div>
+
+        <Card className="col-span-1 row-span-1">
+          <CardHeader>
+            <CardTitle
+              suppressHydrationWarning
+              className="flex flex-row items-center"
+            >
+              Current Weather (as of{" "}
+              {currentTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })}
+              ){" "}
+              <Button
+                onClick={fetchWeather}
+                variant="link"
+                className="ml-auto p-0"
+              >
+                Refresh
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {rawData && rawData.current ? (
+              <>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Thermometer />
+                  <span>{`${rawData.current.temperature}°F, feels like ${rawData.current.apparent_temperature}°F`}</span>
+                </div>
+                <div className="flex items-center space-x-2 mb-2">
+                  {weatherIcon} <span>{weatherDescription}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Wind />
+                  <span>{`${rawData.current.wind_speed_10m} mph, gusting to ${rawData.current.wind_gusts_10m}`}</span>
+                </div>
+              </>
+            ) : (
+              <Skeleton className="h-14" />
+            )}
+          </CardContent>
+        </Card>
+        <Card className="col-span-2 row-span-1">
+          <CardHeader>
+            <CardTitle>Credits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>
+              Weather data provided by{" "}
+              <a
+                href="https://open-meteo.com/"
+                className="text-blue-500 hover:underline"
+              >
+                Open-Meteo
+              </a>
+            </p>
+            <p>
+              Alert data provided by{" "}
+              <a
+                href="https://www.weather.gov/documentation/services-web-api#/"
+                className="text-blue-500 hover:underline"
+              >
+                NWS
+              </a>
+            </p>
+            <p>
+              Made with{" "}
+              <Heart
+                size={14}
+                className="inline-block animate-pulse text-red-800 [animation-duration:3s]"
+              />{" "}
+              by{" "}
+              <a
+                href="https://github.com/pythonatsea"
+                className="text-blue-500 hover:underline"
+              >
+                pythonatsea
+              </a>
+            </p>
+          </CardContent>
+        </Card>
+      </main>
       {/*<p>{JSON.stringify(rawData)}</p>*/}
     </>
   );
