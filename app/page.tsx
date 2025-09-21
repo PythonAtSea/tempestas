@@ -63,7 +63,7 @@ const chartConfig = {
     label: "Temperature",
   },
   precipitation: {
-    label: "Precipitation",
+    label: "Rain %",
   },
   wind_speed: {
     label: "Wind Speed",
@@ -514,7 +514,7 @@ export default function Page() {
       futureTemps.push({
         time: new Date(rawData.minutely_15.time[i]),
         temp: rawData.minutely_15.temperature_2m[i],
-        precipitation: rawData.minutely_15.precipitation[i],
+        precipitation: rawData.minutely_15.precipitation_probability[i],
         apparent_temp: rawData.minutely_15.apparent_temperature[i],
         wind_speed: rawData.minutely_15.wind_speed_10m[i],
         wind_gusts: Math.max(
@@ -572,7 +572,7 @@ export default function Page() {
           </DialogContent>
         </Dialog>
       </header>
-      <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+      <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {weatherAlerts.length > 0 &&
           weatherAlerts.map((alert, idx) => (
             <Card
@@ -581,7 +581,7 @@ export default function Page() {
                 alert.severity === "Severe" || alert.severity === "Extreme"
                   ? "bg-destructive/10 border-destructive"
                   : "border-yellow-500 bg-yellow-500/10"
-              } md:col-span-2 lg:col-span-3`}
+              } col-span-1 sm:col-span-2 lg:col-span-3`}
             >
               <CardHeader>
                 <CardTitle
@@ -629,7 +629,7 @@ export default function Page() {
             </Card>
           ))}
 
-        <Card className="col-span-1 row-span-2 flex flex-col">
+        <Card className="col-span-1 sm:row-span-2 flex flex-col">
           <CardHeader>
             <CardTitle>Settings</CardTitle>
           </CardHeader>
@@ -778,7 +778,7 @@ export default function Page() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-1 md:col-span-1 lg:col-span-2 row-span-2">
+        <Card className="col-span-1 sm:col-span-1 lg:col-span-2 sm:row-span-2">
           <CardHeader>
             <CardTitle>Future weather</CardTitle>
           </CardHeader>
@@ -933,7 +933,7 @@ export default function Page() {
           <CardHeader>
             <CardTitle
               suppressHydrationWarning
-              className="flex flex-row items-center"
+              className="flex flex-row items-center text-sm sm:text-base"
             >
               Current Weather (as of{" "}
               {currentTime.toLocaleTimeString([], {
@@ -945,7 +945,7 @@ export default function Page() {
               <Button
                 onClick={fetchWeather}
                 variant="link"
-                className="ml-auto p-0"
+                className="ml-auto p-0 h-auto"
               >
                 Refresh
               </Button>
@@ -971,7 +971,7 @@ export default function Page() {
             )}
           </CardContent>
         </Card>
-        <Card className="col-span-2 row-span-1">
+        <Card className="col-span-1 lg:col-span-2 row-span-1">
           <CardHeader>
             <CardTitle>Credits</CardTitle>
           </CardHeader>
