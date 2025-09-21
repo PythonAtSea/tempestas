@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useMemo, useCallback } from "react";
 
 import {
+  Icon,
   CircleQuestionMark,
   CloudSun,
   Sun,
@@ -24,6 +25,7 @@ import {
   TriangleAlert,
   Heart,
 } from "lucide-react";
+import { glassesSun } from "@lucide/lab";
 import {
   ChartContainer,
   ChartTooltip,
@@ -230,7 +232,7 @@ export default function Page() {
   const fetchWeather = useCallback(() => {
     if (lat === null || lon === null) return;
     fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,precipitation_sum,windspeed_10m_max,windgusts_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&current=precipitation,weathercode,windspeed,winddirection,temperature,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m&past_days=${pastDays}&forecast_days=${futureDays}&minutely_15=temperature_2m,weather_code,precipitation_probability,precipitation,apparent_temperature,cloud_cover,wind_speed_10m,wind_gusts_10m,cloud_cover`
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,precipitation_sum,windspeed_10m_max,windgusts_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&current=precipitation,weathercode,windspeed,winddirection,temperature,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&past_days=${pastDays}&forecast_days=${futureDays}&minutely_15=temperature_2m,weather_code,precipitation_probability,precipitation,apparent_temperature,cloud_cover,wind_speed_10m,wind_gusts_10m,cloud_cover`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -961,9 +963,51 @@ export default function Page() {
                 <div className="flex items-center space-x-2 mb-2">
                   {weatherIcon} <span>{weatherDescription}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 mb-2">
                   <Wind />
                   <span>{`${rawData.current.wind_speed_10m} mph, gusting to ${rawData.current.wind_gusts_10m}`}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Icon iconNode={glassesSun} />
+                  {(() => {
+                    const uvIndex = rawData.current.uv_index;
+                    switch (true) {
+                      case uvIndex >= 0 && uvIndex <= 2:
+                        return (
+                          <span className="bg-green-600">Low ({uvIndex})</span>
+                        );
+                      case uvIndex >= 3 && uvIndex <= 5:
+                        return (
+                          <span className="bg-yellow-500">
+                            Moderate ({uvIndex})
+                          </span>
+                        );
+                      case uvIndex >= 6 && uvIndex <= 7:
+                        return (
+                          <span className="bg-orange-500">
+                            High ({uvIndex})
+                          </span>
+                        );
+                      case uvIndex >= 8 && uvIndex <= 10:
+                        return (
+                          <span className="bg-red-500">
+                            Very High ({uvIndex})
+                          </span>
+                        );
+                      case uvIndex >= 11:
+                        return (
+                          <span className="bg-violet-500">
+                            Extreme ({uvIndex})
+                          </span>
+                        );
+                      default:
+                        return (
+                          <span className="bg-gray-500">
+                            Unknown ({uvIndex})
+                          </span>
+                        );
+                    }
+                  })()}
                 </div>
               </>
             ) : (

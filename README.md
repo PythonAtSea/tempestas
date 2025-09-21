@@ -1,6 +1,6 @@
 # tempestas
 
-A opensource, adfree, and free weather (web)app. It gets most of it's data from [open-meteo](https://open-meteo.com/), and gets weather alerts (in the US only rn, sorry) from the [NWS](https://www.weather.gov/documentation/services-web-api#/). It's built using [Next.JS](https://nextjs.org/) and uses a modified version of [shadcn](https://ui.shadcn.com/). THe chart is made using [recharts](https://recharts.org/). It's all on a single page, mainly cuz there isn't a reason to split it up.
+A opensource, adfree, and free weather (web)app. It gets most of it's data from [open-meteo](https://open-meteo.com/), and gets weather alerts (in the US only rn, sorry) from the [NWS](https://www.weather.gov/documentation/services-web-api#/). It's built using [Next.JS](https://nextjs.org/) and uses a modified version of [shadcn](https://ui.shadcn.com/). The chart is made using [recharts](https://recharts.org/). It's all on a single page, mainly cuz there isn't a reason to split it up.
 
 ### Location
 
