@@ -970,31 +970,31 @@ export default function Page() {
                 <div className="flex items-center space-x-2">
                   <Icon iconNode={glassesSun} />
                   {(() => {
-                    const uvIndex = rawData.current.uv_index;
+                    const uvIndex = Number("2.2");
                     switch (true) {
                       case uvIndex >= 0 && uvIndex <= 2:
                         return (
                           <span className="bg-green-600">Low ({uvIndex})</span>
                         );
-                      case uvIndex >= 3 && uvIndex <= 5:
+                      case uvIndex > 2 && uvIndex <= 5:
                         return (
                           <span className="bg-yellow-500">
                             Moderate ({uvIndex})
                           </span>
                         );
-                      case uvIndex >= 6 && uvIndex <= 7:
+                      case uvIndex > 5 && uvIndex <= 7:
                         return (
                           <span className="bg-orange-500">
                             High ({uvIndex})
                           </span>
                         );
-                      case uvIndex >= 8 && uvIndex <= 10:
+                      case uvIndex > 7 && uvIndex <= 10:
                         return (
                           <span className="bg-red-500">
                             Very High ({uvIndex})
                           </span>
                         );
-                      case uvIndex >= 11:
+                      case uvIndex > 10:
                         return (
                           <span className="bg-violet-500">
                             Extreme ({uvIndex})
