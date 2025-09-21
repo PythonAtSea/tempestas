@@ -48,6 +48,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import zipcodes from "zipcodes-us";
 
 const chartConfig = {
   temp: {
@@ -194,6 +195,7 @@ export default function Page() {
   const [shareURL, setShareURL] = useState("");
   const [shareIcon, setShareIcon] = useState(<Copy />);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [zip, setZip] = useState("");
   type weatherDataType = Array<{
     time: Date;
     temp: number;
@@ -393,6 +395,15 @@ export default function Page() {
       }
     }
   }, [lat, lon]);
+
+  useEffect(() => {
+    const info = zipcodes.find(zip);
+    if (zip.length === 5 && info.isValid) {
+      setLat(info.latitude.toFixed(6).toString());
+      setLon(info.longitude.toFixed(6).toString());
+      setZip("");
+    }
+  }, [zip]);
 
   useEffect(() => {
     if (!rawData || !rawData.current) return;
@@ -615,6 +626,14 @@ export default function Page() {
               {lat && lon ? (
                 <div className="space-y-2">
                   <div className="flex flex-col space-y-2 mb-6">
+                    <Label htmlFor="zip">ZIP Code:</Label>
+                    <Input
+                      id="zip"
+                      value={zip}
+                      onChange={(e) => setZip(e.target.value)}
+                      className="w-fill"
+                      placeholder="US Zip code"
+                    />
                     <Label htmlFor="latitude">Latitude:</Label>
                     <Input
                       id="latitude"
