@@ -1938,7 +1938,7 @@ export default function Page() {
             {rawData && rawData.current ? (
               <>
                 <div
-                  className="mb-4 text-center p-3 border shadow-sm"
+                  className="mb-4 text-center p-3 shadow-sm"
                   style={{
                     background: `linear-gradient(to right, ${weatherColor}60, ${bandColorForTemp(
                       rawData.current.temperature,
