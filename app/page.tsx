@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Calendar, Navigation } from "lucide-react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { Calendar, Loader2, Navigation } from "lucide-react";
 import TempSlider from "./components/temp-slider";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -36,12 +36,16 @@ export default function Home() {
   );
   const [locError, setLocError] = useState<string | null>(null);
   const [locationName, setLocationName] = useState<string | null>(null);
+  const [geolocationSupported, setGeolocationSupported] = useState<
+    boolean | null
+  >(null);
 
-  const geolocationUnsupported =
-    typeof navigator === "undefined" || !navigator.geolocation;
-
-  useEffect(() => {
-    if (geolocationUnsupported) return;
+  useLayoutEffect(() => {
+    const supported =
+      typeof navigator !== "undefined" && !!navigator.geolocation;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setGeolocationSupported(supported);
+    if (!supported) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
@@ -51,15 +55,19 @@ export default function Home() {
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
-  }, [geolocationUnsupported]);
+  }, []);
 
   useEffect(() => {
     if (!coords) return;
+    const controller = new AbortController();
+    const { signal } = controller;
     fetch(
-      `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${coords.lon},${coords.lat}&f=json`
+      `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${coords.lon},${coords.lat}&f=json`,
+      { signal }
     )
       .then((response) => response.json())
       .then((data) => {
+        if (!data?.address) return;
         setLocationName(
           data.address.City +
             ", " +
@@ -67,8 +75,10 @@ export default function Home() {
         );
       })
       .catch((err) => {
+        if (err?.name === "AbortError") return;
         setLocError(err.message || String(err));
       });
+    return () => controller.abort();
   }, [coords]);
 
   return (
@@ -80,15 +90,22 @@ export default function Home() {
             <p>Current Location</p>
           </div>
         )}
-        {!geolocationUnsupported && !coords && !locError && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            Detecting location…
-          </p>
+        {geolocationSupported === null && (
+          <div className="flex flex-row items-center gap-1 mt-1 text-xs text-muted-foreground">
+            <Loader2 className="inline-block size-3 animate-spin" />
+            <p>Loading...</p>
+          </div>
         )}
-        {geolocationUnsupported && (
-          <p className="mt-1 text-xs text-red-500">Geolocation unsupported</p>
+        {geolocationSupported === false && (
+          <p className="mt-1 text-xs text-red-500">Geolocation not supported</p>
         )}
-        {locError && !geolocationUnsupported && (
+        {geolocationSupported && !coords && !locError && (
+          <div className="flex flex-row items-center gap-1 mt-1 text-xs text-muted-foreground">
+            <Navigation className="inline-block size-3" />
+            <p>Loading...</p>
+          </div>
+        )}
+        {locError && geolocationSupported && (
           <p className="mt-1 text-xs text-red-500">{locError}</p>
         )}
       </div>
