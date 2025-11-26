@@ -3,34 +3,10 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { Calendar, Loader2, Navigation } from "lucide-react";
 import TempSlider from "./components/temp-slider";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const hourly = [
-  { time: "Now", temp: 90, icon: "sun" },
-  { time: "1 PM", temp: 100, icon: "sun" },
-  { time: "2 PM", temp: 101, icon: "sun" },
-  { time: "3 PM", temp: 102, icon: "sun" },
-  { time: "4 PM", temp: 101, icon: "sun" },
-  { time: "5 PM", temp: 100, icon: "sun" },
-  { time: "6 PM", temp: 99, icon: "sun" },
-  { time: "7 PM", temp: 98, icon: "sun" },
-  { time: "8 PM", temp: 97, icon: "sun" },
-];
-
-const daily = [
-  { day: "Today", high: 101, low: 78, icon: "sun" },
-  { day: "Mon", high: 101, low: 78, icon: "sun" },
-  { day: "Tue", high: 99, low: 77, icon: "cloud-sun" },
-  { day: "Wed", high: 95, low: 75, icon: "cloud-rain" },
-  { day: "Thu", high: 93, low: 73, icon: "cloud" },
-  { day: "Fri", high: 96, low: 76, icon: "sun" },
-];
+import { WeatherResponse } from "@/lib/types/weather";
+import { getWeatherCodeDescription } from "@/lib/weather-code";
 
 export default function Home() {
-  const maxHighWidth = Math.max(...daily.map((d) => d.high.toString().length));
-  const maxLowWidth = Math.max(...daily.map((d) => d.low.toString().length));
-  const minTemp = Math.min(...daily.map((d) => d.low));
-  const maxTemp = Math.max(...daily.map((d) => d.high));
-
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(
     null
   );
@@ -39,6 +15,11 @@ export default function Home() {
   const [geolocationSupported, setGeolocationSupported] = useState<
     boolean | null
   >(null);
+  const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null);
+  const [maxLowWidth, setMaxLowWidth] = useState(2);
+  const [maxHighWidth, setMaxHighWidth] = useState(2);
+  const [minTemp, setMinTemp] = useState(0);
+  const [maxTemp, setMaxTemp] = useState(100);
 
   useLayoutEffect(() => {
     const supported =
@@ -72,6 +53,43 @@ export default function Home() {
           data.address.City +
             ", " +
             (data.address.RegionAbbr || data.address.Region)
+        );
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        setLocError(err.message || String(err));
+      });
+    return () => controller.abort();
+  }, [coords]);
+
+  useEffect(() => {
+    if (!coords) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant,wind_gusts_10m_max,daylight_duration,sunshine_duration,uv_index_max,uv_index_clear_sky_max,showers_sum,snowfall_sum,rain_sum,precipitation_sum,precipitation_hours,precipitation_probability_max&hourly=temperature_2m,weather_code,apparent_temperature,relative_humidity_2m,dew_point_2m,pressure_msl,cloud_cover,visibility,precipitation,precipitation_probability,rain,showers,snowfall,snow_depth,wind_speed_10m,wind_gusts_10m,surface_pressure&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,rain,showers,snowfall,cloud_cover,pressure_msl,surface_pressure&timezone=auto&past_days=0&forecast_days=14&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch`,
+      { signal }
+    )
+      .then((response) => response.json())
+      .then((data: WeatherResponse) => {
+        setWeatherData(data);
+        setMinTemp(Math.min(...(data.daily.temperature_2m_min ?? [0])));
+        setMaxTemp(
+          Math.max(...(data.daily.temperature_2m_max ?? [100])) ?? 100
+        );
+        setMaxLowWidth(
+          Math.max(
+            ...(data.daily.temperature_2m_min.map((t) => {
+              return Math.round(t).toString().length;
+            }) ?? [2])
+          )
+        );
+        setMaxHighWidth(
+          Math.max(
+            ...(data.daily.temperature_2m_max.map((t) => {
+              return Math.round(t).toString().length;
+            }) ?? [2])
+          )
         );
       })
       .catch((err) => {
@@ -117,7 +135,9 @@ export default function Home() {
         <Skeleton className="h-4 w-20" />
       )}
       <h3 className="relative font-bold font-mono text-4xl">
-        99
+        {weatherData?.current.temperature_2m
+          ? Math.round(weatherData.current.temperature_2m)
+          : "--"}
         <span className="absolute top-0 left-full">º</span>
       </h3>
       <h4 className="text-muted-foreground font-bold">Sunny</h4>
@@ -127,21 +147,38 @@ export default function Home() {
       <div className="w-full p-6">
         <div className="w-full border overflow-x-auto overflow-y-hidden">
           <div className="flex w-max gap-4 px-4 py-4">
-            {hourly.map((hour, i) => (
-              <div
-                key={i}
-                className="shrink-0 flex flex-col items-center gap-2"
-              >
-                <span className="text-sm text-muted-foreground">
-                  {hour.time}
-                </span>
-                <i className="wi wi-day-sunny text-yellow-400 scale-125 px-3 py-2"></i>
-                <span className="font-mono font-bold relative">
-                  {hour.temp}
-                  <span className="absolute top-0 left-full">º</span>
-                </span>
-              </div>
-            ))}
+            {weatherData?.hourly.time
+              .filter((time) => {
+                const date = new Date(time);
+                const now = new Date();
+                return date.getTime() > now.getTime() - 60 * 60 * 1000;
+              })
+              .map((time, i) => (
+                <div
+                  key={i}
+                  className="shrink-0 flex flex-col items-center gap-2"
+                >
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(time).toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      hour12: true,
+                    })}
+                  </span>
+                  <i
+                    className={`wi ${
+                      getWeatherCodeDescription(
+                        weatherData?.hourly.weather_code[i]
+                      ).iconClass
+                    } scale-125 px-3 py-2`}
+                  />
+                  <span className="font-mono font-bold relative">
+                    {Math.round(weatherData?.hourly.temperature_2m[i] ?? 0)
+                      .toString()
+                      .padStart(2, "\u00A0")}
+                    <span className="absolute top-0 left-full">º</span>
+                  </span>
+                </div>
+              ))}
           </div>
         </div>
       </div>
@@ -152,32 +189,86 @@ export default function Home() {
             10 day forecast
           </p>
           <div className="w-full">
-            {daily.map((day, i) => (
-              <div
-                key={i}
-                className="flex justify-between items-center p-3 border-t"
-              >
-                <div className="flex items-center gap-4 mr-4">
-                  <span className="w-9 text-sm">{day.day}</span>
-                  <i className="wi wi-day-sunny text-yellow-400 scale-125"></i>
+            {weatherData?.daily.time
+              .filter((time) => {
+                return (
+                  new Date(time).getTime() > new Date().setHours(0, 0, 0, 0)
+                );
+              })
+              .map((time, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between items-center p-3 border-t"
+                >
+                  <div className="flex items-center gap-4 mr-4">
+                    <span className="w-9 text-sm">
+                      {(() => {
+                        const d = new Date(time);
+                        const t = new Date();
+                        if (
+                          d.getFullYear() === t.getFullYear() &&
+                          d.getMonth() === t.getMonth() &&
+                          d.getDate() === t.getDate()
+                        ) {
+                          return "Today";
+                        }
+                        return d.toLocaleDateString(undefined, {
+                          weekday: "short",
+                        });
+                      })()}
+                    </span>
+                    <i
+                      className={`wi scale-125 ${
+                        getWeatherCodeDescription(
+                          weatherData?.daily.weather_code[i]
+                        ).iconClass
+                      }`}
+                    />
+                  </div>
+                  <span className="font-mono font-bold relative mr-2 text-muted-foreground">
+                    {Math.round(weatherData?.daily.temperature_2m_min[i])
+                      .toString()
+                      .padStart(
+                        maxLowWidth -
+                          Math.round(
+                            weatherData?.daily.temperature_2m_min[i]
+                          ).toString().length,
+                        "\u00A0"
+                      )}
+                    º
+                  </span>
+                  <TempSlider
+                    dotTemp={(() => {
+                      const d = new Date(time);
+                      const t = new Date();
+                      if (
+                        d.getFullYear() === t.getFullYear() &&
+                        d.getMonth() === t.getMonth() &&
+                        d.getDate() === t.getDate() &&
+                        weatherData?.current.temperature_2m !== undefined
+                      ) {
+                        return weatherData?.current.temperature_2m;
+                      } else {
+                        return null;
+                      }
+                    })()}
+                    minTemp={minTemp}
+                    maxTemp={maxTemp}
+                    lowTemp={weatherData?.daily.temperature_2m_min[i]}
+                    highTemp={weatherData?.daily.temperature_2m_max[i]}
+                    className="flex-1"
+                  />
+                  <span className="font-mono font-bold ml-2">
+                    {Math.round(weatherData?.daily.temperature_2m_max[i])}º
+                    {"\u00A0".repeat(
+                      maxHighWidth -
+                        Math.round(
+                          weatherData?.daily.temperature_2m_max[i]
+                        ).toString().length
+                    )}
+                  </span>
                 </div>
-                <span className="font-mono font-bold relative mr-2 text-muted-foreground">
-                  {day.low.toString().padStart(maxLowWidth, "\u00A0")}º
-                </span>
-                <TempSlider
-                  dotTemp={day.day === "Today" ? hourly[0].temp : undefined}
-                  minTemp={minTemp}
-                  maxTemp={maxTemp}
-                  lowTemp={day.low}
-                  highTemp={day.high}
-                  className="flex-1"
-                />
-                <span className="font-mono font-bold ml-2">
-                  {day.high}º
-                  {"\u00A0".repeat(maxHighWidth - day.high.toString().length)}
-                </span>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>

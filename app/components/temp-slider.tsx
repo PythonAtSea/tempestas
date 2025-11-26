@@ -3,7 +3,7 @@ type TempSliderProps = {
   maxTemp: number;
   lowTemp: number;
   highTemp: number;
-  dotTemp?: number;
+  dotTemp?: number | null;
   className?: string;
 };
 type ColorStop = { temp: number; color: string };
@@ -26,7 +26,7 @@ const DEFAULT_TEMP_COLOR_STOPS: Array<ColorStop> = [
   { temp: 50, color: "#48D1CC" },
   { temp: 45, color: "#00CED1" },
   { temp: 40, color: "#1E90FF" },
-  { temp: 32, color: "#001F3F" },
+  //{ temp: 32, color: "#001F3F" },
   { temp: 30, color: "#6A8FBF" },
   { temp: 25, color: "#7FA3D1" },
   { temp: 20, color: "#90B0D6" },
@@ -97,7 +97,7 @@ export default function Component({
   const left = Math.min(toPercent(lowTemp), toPercent(highTemp));
   const right = Math.max(toPercent(lowTemp), toPercent(highTemp));
   const width = right - left;
-  const dot = dotTemp !== undefined ? toPercent(dotTemp) : undefined;
+  const dot = dotTemp !== undefined ? toPercent(dotTemp || 0) : undefined;
 
   const gradientBackground = buildTempGradientForSegment(
     min,
@@ -119,7 +119,7 @@ export default function Component({
           background: gradientBackground,
         }}
       />
-      {dot !== undefined && (
+      {dot !== undefined && dotTemp !== null && (
         <div
           className="absolute top-1/2 rounded-full -translate-y-1/2 -translate-x-1/2 h-2.5 w-2.5 bg-white border-2 border-background"
           style={{ left: `${dot}%` }}
