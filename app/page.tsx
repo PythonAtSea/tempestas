@@ -21,6 +21,7 @@ export default function Home() {
   const [minTemp, setMinTemp] = useState(0);
   const [maxTemp, setMaxTemp] = useState(100);
   const [showScrollReset, setShowScrollReset] = useState(false);
+  const [conditionsSummary, setConditionsSummary] = useState<string>("");
   const hourlyScrollRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -101,6 +102,31 @@ export default function Home() {
     return () => controller.abort();
   }, [coords]);
 
+  useEffect(() => {
+    if (!weatherData) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    fetch("/api/summary/conditions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(weatherData),
+      signal,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.content) {
+          setConditionsSummary(data.content);
+        }
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        console.error("Error getting conditions summary:", err);
+      });
+
+    return () => controller.abort();
+  }, [weatherData]);
+
   return (
     <div className="flex flex-col items-center min-h-screen">
       <div className="mt-10 ">
@@ -148,10 +174,30 @@ export default function Home() {
             .weatherCondition
         }
       </h4>
-      <p className="text-sm px-6 pt-8">
-        It is mostly sunny through the afternoon, with wind gusts up to 12 mph.
-      </p>
-      <div className="w-full p-6">
+      <div className="p-6 w-full pb-0">
+        <div className="border border-red-500 w-full">
+          <div className="bg-red-500 mt-0 p-2 px-4">
+            [PLACEHOLDER] Tornado Warning
+          </div>
+          <p className="p-4">
+            There is a tornado warning in effect for Banana County, East
+            Caroline from 26:15 till 45:00
+          </p>
+        </div>
+      </div>
+      <div className="p-6 w-full pb-0">
+        <p className="text-sm border border-b-0 p-4">
+          {conditionsSummary ? (
+            <span>{conditionsSummary}</span>
+          ) : weatherData ? (
+            <>
+              <Loader2 className="inline-block size-4 animate-spin mr-2" />
+              <span className="text-muted-foreground">Fetching summary...</span>
+            </>
+          ) : null}
+        </p>
+      </div>
+      <div className="w-full p-6 pt-0">
         <div className="relative">
           <div
             ref={hourlyScrollRef}
@@ -195,11 +241,11 @@ export default function Home() {
                       )}
                     </div>
                     <i
-                      className={`wi ${
+                      className={`wi wi-fw scale-125 ${
                         getWeatherCodeDescription(
                           weatherData?.hourly.weather_code[i]
                         ).iconClass
-                      } scale-125 px-3 py-2`}
+                      } py-2`}
                     />
                     <span className="font-mono font-bold relative">
                       {Math.round(weatherData?.hourly.temperature_2m[i] ?? 0)
@@ -233,7 +279,7 @@ export default function Home() {
         <div className="border">
           <p className="p-2 font-bold text-muted-foreground flex flex-row items-center gap-2">
             <Calendar className="inline-block size-4" />
-            10 day forecast
+            14 day forecast
           </p>
           <div className="w-full">
             {weatherData?.daily.time
@@ -265,7 +311,7 @@ export default function Home() {
                       })()}
                     </span>
                     <i
-                      className={`wi scale-125 ${
+                      className={`wi wi-fw scale-125 ${
                         getWeatherCodeDescription(
                           weatherData?.daily.weather_code[i]
                         ).iconClass
@@ -273,16 +319,16 @@ export default function Home() {
                     />
                   </div>
                   <span className="font-mono font-bold relative mr-2 text-muted-foreground">
-                    {Math.round(weatherData?.daily.temperature_2m_min[i])
-                      .toString()
-                      .padStart(
+                    {"\u00A0".repeat(
+                      Math.max(
+                        0,
                         maxLowWidth -
                           Math.round(
                             weatherData?.daily.temperature_2m_min[i]
-                          ).toString().length,
-                        "\u00A0"
-                      )}
-                    º
+                          ).toString().length
+                      )
+                    )}
+                    {Math.round(weatherData?.daily.temperature_2m_min[i])}º
                   </span>
                   <TempSlider
                     dotTemp={(() => {
@@ -308,10 +354,13 @@ export default function Home() {
                   <span className="font-mono font-bold ml-2">
                     {Math.round(weatherData?.daily.temperature_2m_max[i])}º
                     {"\u00A0".repeat(
-                      maxHighWidth -
-                        Math.round(
-                          weatherData?.daily.temperature_2m_max[i]
-                        ).toString().length
+                      Math.max(
+                        0,
+                        maxHighWidth -
+                          Math.round(
+                            weatherData?.daily.temperature_2m_max[i]
+                          ).toString().length
+                      )
                     )}
                   </span>
                 </div>
