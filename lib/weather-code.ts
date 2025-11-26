@@ -6,99 +6,99 @@ export function getWeatherCodeDescription(
   let iconClass: string;
   switch (code) {
     case 0:
-      weatherCondition = "clear skies";
+      weatherCondition = "Clear skies";
       iconClass = day ? "wi-day-sunny" : "wi-night-clear";
       break;
     case 1:
-      weatherCondition = "mainly clear skies";
+      weatherCondition = "Mainly clear skies";
       iconClass = day ? "wi-day-sunny-overcast" : "wi-night-alt-cloudy";
       break;
     case 2:
-      weatherCondition = "partly cloudy skies";
+      weatherCondition = "Partly cloudy skies";
       iconClass = day ? "wi-day-cloudy" : "wi-night-alt-cloudy";
       break;
     case 3:
-      weatherCondition = "overcast skies";
+      weatherCondition = "Overcast skies";
       iconClass = "wi-cloudy";
       break;
     case 45:
-      weatherCondition = "fog";
+      weatherCondition = "Fog";
       iconClass = day ? "wi-day-fog" : "wi-night-fog";
       break;
     case 48:
-      weatherCondition = "depositing rime fog";
+      weatherCondition = "Depositing rime fog";
       iconClass = day ? "wi-day-fog" : "wi-night-fog";
       break;
     case 51:
-      weatherCondition = "light drizzle";
+      weatherCondition = "Light drizzle";
       iconClass = day ? "wi-day-sprinkle" : "wi-night-alt-sprinkle";
       break;
     case 53:
-      weatherCondition = "moderate drizzle";
+      weatherCondition = "Moderate drizzle";
       iconClass = day ? "wi-day-sprinkle" : "wi-night-alt-sprinkle";
       break;
     case 55:
-      weatherCondition = "dense drizzle";
+      weatherCondition = "Dense drizzle";
       iconClass = day ? "wi-day-rain" : "wi-night-alt-rain";
       break;
     case 61:
-      weatherCondition = "light rain";
+      weatherCondition = "Light rain";
       iconClass = day ? "wi-day-rain" : "wi-night-alt-rain";
       break;
     case 63:
-      weatherCondition = "moderate rain";
+      weatherCondition = "Moderate rain";
       iconClass = day ? "wi-day-rain" : "wi-night-alt-rain";
       break;
     case 65:
-      weatherCondition = "heavy rain";
+      weatherCondition = "Heavy rain";
       iconClass = day ? "wi-day-rain-wind" : "wi-night-alt-rain-wind";
       break;
     case 71:
-      weatherCondition = "light snow";
+      weatherCondition = "Light snow";
       iconClass = day ? "wi-day-snow" : "wi-night-alt-snow";
       break;
     case 73:
-      weatherCondition = "moderate snow";
+      weatherCondition = "Moderate snow";
       iconClass = day ? "wi-day-snow" : "wi-night-alt-snow";
       break;
     case 75:
-      weatherCondition = "heavy snow";
+      weatherCondition = "Heavy snow";
       iconClass = day ? "wi-day-snow-wind" : "wi-night-alt-snow-wind";
       break;
     case 80:
-      weatherCondition = "light rain showers";
+      weatherCondition = "Light rain showers";
       iconClass = day ? "wi-day-showers" : "wi-night-alt-showers";
       break;
     case 81:
-      weatherCondition = "moderate rain showers";
+      weatherCondition = "Moderate rain showers";
       iconClass = day ? "wi-day-showers" : "wi-night-alt-showers";
       break;
     case 82:
-      weatherCondition = "violent rain showers";
+      weatherCondition = "Violent rain showers";
       iconClass = day ? "wi-day-rain-wind" : "wi-night-alt-rain-wind";
       break;
     case 85:
-      weatherCondition = "light snow showers";
+      weatherCondition = "Light snow showers";
       iconClass = day ? "wi-day-snow" : "wi-night-alt-snow";
       break;
     case 86:
-      weatherCondition = "heavy snow showers";
+      weatherCondition = "Heavy snow showers";
       iconClass = day ? "wi-day-snow-wind" : "wi-night-alt-snow-wind";
       break;
     case 95:
-      weatherCondition = "thunderstorms";
+      weatherCondition = "Thunderstorms";
       iconClass = day ? "wi-day-thunderstorm" : "wi-night-alt-thunderstorm";
       break;
     case 96:
-      weatherCondition = "thunderstorms with light hail";
+      weatherCondition = "Thunderstorms with light hail";
       iconClass = day ? "wi-day-hail" : "wi-night-alt-hail";
       break;
     case 99:
-      weatherCondition = "thunderstorms with heavy hail";
+      weatherCondition = "Thunderstorms with heavy hail";
       iconClass = day ? "wi-day-hail" : "wi-night-alt-hail";
       break;
     default:
-      weatherCondition = "";
+      weatherCondition = "Unknown";
       iconClass = "wi-na";
   }
   return { weatherCondition, iconClass };

@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useLayoutEffect, useState } from "react";
-import { Calendar, Loader2, Navigation } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Calendar, Loader2, Navigation, ChevronsLeft } from "lucide-react";
 import TempSlider from "./components/temp-slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WeatherResponse } from "@/lib/types/weather";
@@ -20,6 +20,8 @@ export default function Home() {
   const [maxHighWidth, setMaxHighWidth] = useState(2);
   const [minTemp, setMinTemp] = useState(0);
   const [maxTemp, setMaxTemp] = useState(100);
+  const [showScrollReset, setShowScrollReset] = useState(false);
+  const hourlyScrollRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const supported =
@@ -140,46 +142,91 @@ export default function Home() {
           : "--"}
         <span className="absolute top-0 left-full">º</span>
       </h3>
-      <h4 className="text-muted-foreground font-bold">Sunny</h4>
+      <h4 className="text-muted-foreground font-bold">
+        {
+          getWeatherCodeDescription(weatherData?.current.weather_code || -1)
+            .weatherCondition
+        }
+      </h4>
       <p className="text-sm px-6 pt-8">
         It is mostly sunny through the afternoon, with wind gusts up to 12 mph.
       </p>
       <div className="w-full p-6">
-        <div className="w-full border overflow-x-auto overflow-y-hidden">
-          <div className="flex w-max gap-4 px-4 py-4">
-            {weatherData?.hourly.time
-              .filter((time) => {
-                const date = new Date(time);
-                const now = new Date();
-                return date.getTime() > now.getTime() - 60 * 60 * 1000;
-              })
-              .map((time, i) => (
-                <div
-                  key={i}
-                  className="shrink-0 flex flex-col items-center gap-2"
-                >
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(time).toLocaleTimeString(undefined, {
-                      hour: "numeric",
-                      hour12: true,
-                    })}
-                  </span>
-                  <i
-                    className={`wi ${
-                      getWeatherCodeDescription(
-                        weatherData?.hourly.weather_code[i]
-                      ).iconClass
-                    } scale-125 px-3 py-2`}
-                  />
-                  <span className="font-mono font-bold relative">
-                    {Math.round(weatherData?.hourly.temperature_2m[i] ?? 0)
-                      .toString()
-                      .padStart(2, "\u00A0")}
-                    <span className="absolute top-0 left-full">º</span>
-                  </span>
-                </div>
-              ))}
+        <div className="relative">
+          <div
+            ref={hourlyScrollRef}
+            onScroll={(e) => {
+              const scrollLeft = e.currentTarget.scrollLeft;
+              setShowScrollReset(scrollLeft > 50);
+            }}
+            className="w-full border overflow-x-auto overflow-y-hidden"
+          >
+            <div className="flex w-max gap-4 px-4 py-4">
+              {weatherData?.hourly.time
+                .filter((time) => {
+                  const date = new Date(time);
+                  const now = new Date();
+                  return date.getTime() > now.getTime() - 60 * 60 * 1000;
+                })
+                .map((time, i) => (
+                  <div
+                    key={i}
+                    className="shrink-0 flex flex-col items-center gap-2"
+                  >
+                    <div className="relative pb-3">
+                      <span
+                        className={`text-sm text-muted-foreground block text-center ${
+                          new Date(time).getDay() === new Date().getDay()
+                            ? "mt-1.5 -mb-1.5"
+                            : ""
+                        }`}
+                      >
+                        {new Date(time).toLocaleTimeString(undefined, {
+                          hour: "numeric",
+                          hour12: true,
+                        })}
+                      </span>
+                      {new Date(time).getDay() !== new Date().getDay() && (
+                        <span className="absolute left-1/2 transform -translate-x-1/2 text-xs font-bold uppercase text-muted-foreground">
+                          {new Date(time).toLocaleDateString(undefined, {
+                            weekday: "short",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                    <i
+                      className={`wi ${
+                        getWeatherCodeDescription(
+                          weatherData?.hourly.weather_code[i]
+                        ).iconClass
+                      } scale-125 px-3 py-2`}
+                    />
+                    <span className="font-mono font-bold relative">
+                      {Math.round(weatherData?.hourly.temperature_2m[i] ?? 0)
+                        .toString()
+                        .padStart(2, "\u00A0")}
+                      <span className="absolute top-0 left-full">º</span>
+                    </span>
+                  </div>
+                ))}
+            </div>
           </div>
+          {showScrollReset && (
+            <button
+              onClick={() => {
+                if (hourlyScrollRef.current) {
+                  hourlyScrollRef.current.scrollTo({
+                    left: 0,
+                    behavior: "smooth",
+                  });
+                }
+              }}
+              className="absolute left-4 top-9 -translate-y-1/2 bg-background border p-2 shadow-lg hover:bg-accent transition-colors"
+              aria-label="Reset scroll position"
+            >
+              <ChevronsLeft className="size-5" />
+            </button>
+          )}
         </div>
       </div>
       <div className="w-full px-6 pb-6">
