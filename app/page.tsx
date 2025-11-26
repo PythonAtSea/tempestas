@@ -1,5 +1,8 @@
-import { Calendar } from "lucide-react";
+"use client";
+import { useEffect, useState } from "react";
+import { Calendar, Navigation } from "lucide-react";
 import TempSlider from "./components/temp-slider";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const hourly = [
   { time: "Now", temp: 90, icon: "sun" },
@@ -28,11 +31,74 @@ export default function Home() {
   const minTemp = Math.min(...daily.map((d) => d.low));
   const maxTemp = Math.max(...daily.map((d) => d.high));
 
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(
+    null
+  );
+  const [locError, setLocError] = useState<string | null>(null);
+  const [locationName, setLocationName] = useState<string | null>(null);
+
+  const geolocationUnsupported =
+    typeof navigator === "undefined" || !navigator.geolocation;
+
+  useEffect(() => {
+    if (geolocationUnsupported) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+      },
+      (err) => {
+        setLocError(err.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [geolocationUnsupported]);
+
+  useEffect(() => {
+    if (!coords) return;
+    fetch(
+      `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${coords.lon},${coords.lat}&f=json`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setLocationName(
+          data.address.City +
+            ", " +
+            (data.address.RegionAbbr || data.address.Region)
+        );
+      })
+      .catch((err) => {
+        setLocError(err.message || String(err));
+      });
+  }, [coords]);
+
   return (
     <div className="flex flex-col items-center min-h-screen">
-      <p className="mt-10 text-muted-foreground uppercase font-bold text-xs">
-        Columbus, OH
-      </p>
+      <div className="mt-10 ">
+        {coords && (
+          <div className="flex flex-row items-center gap-1 mt-1 text-xs text-muted-foreground">
+            <Navigation className="inline-block size-3" />
+            <p>Current Location</p>
+          </div>
+        )}
+        {!geolocationUnsupported && !coords && !locError && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Detecting location…
+          </p>
+        )}
+        {geolocationUnsupported && (
+          <p className="mt-1 text-xs text-red-500">Geolocation unsupported</p>
+        )}
+        {locError && !geolocationUnsupported && (
+          <p className="mt-1 text-xs text-red-500">{locError}</p>
+        )}
+      </div>
+      {locationName ? (
+        <p className="text-muted-foreground uppercase font-bold text-xs">
+          {locationName}
+        </p>
+      ) : (
+        <Skeleton className="h-4 w-20" />
+      )}
       <h3 className="relative font-bold font-mono text-4xl">
         99
         <span className="absolute top-0 left-full">º</span>
