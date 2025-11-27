@@ -170,8 +170,10 @@ export default function Home() {
       </h3>
       <h4 className="text-muted-foreground font-bold">
         {
-          getWeatherCodeDescription(weatherData?.current.weather_code || -1)
-            .weatherCondition
+          getWeatherCodeDescription(
+            weatherData?.current.weather_code || -1,
+            weatherData?.current.is_day === 1 ? true : false
+          ).weatherCondition
         }
       </h4>
       <div className="p-6 w-full pb-0">
@@ -366,6 +368,13 @@ export default function Home() {
                 </div>
               ))}
           </div>
+        </div>
+      </div>
+      <div className="w-full px-6 pb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="aspect-square border bg-card" />
+          <div className="aspect-square border bg-card" />
+          <div className="aspect-square border bg-card" />
         </div>
       </div>
     </div>
