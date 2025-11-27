@@ -373,7 +373,7 @@ export default function Home() {
         </div>
       </div>
       <div className="w-full px-6 pb-6">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
             <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
               <i className="wi wi-thermometer" />
@@ -423,7 +423,7 @@ export default function Home() {
                       </span>
                     </span>
                   }
-                  className="mt-auto mb-3"
+                  className="mt-auto mb-2"
                   gradient={`linear-gradient(to ${
                     weatherData.current.apparent_temperature <
                     weatherData.current.temperature_2m
@@ -440,7 +440,12 @@ export default function Home() {
               <Skeleton className="h-8 w-16" />
             )}
           </div>
-          <div className="aspect-square border bg-card" />
+          <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
+            <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
+              <i className="wi wi-day-sunny" />
+              UV Index
+            </p>
+          </div>
           <div className="aspect-square border bg-card" />
         </div>
       </div>
