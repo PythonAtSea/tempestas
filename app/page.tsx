@@ -5,6 +5,8 @@ import TempSlider from "./components/temp-slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WeatherResponse } from "@/lib/types/weather";
 import { getWeatherCodeDescription } from "@/lib/weather-code";
+import Slider from "./components/slider";
+import { getColorForTemp } from "@/lib/get-color-for-temp";
 
 export default function Home() {
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(
@@ -372,7 +374,54 @@ export default function Home() {
       </div>
       <div className="w-full px-6 pb-6">
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="aspect-square border bg-card" />
+          <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
+            <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
+              <i className="wi wi-thermometer" />
+              Feels like
+            </p>
+            {weatherData ? (
+              <>
+                <h3 className="font-bold font-mono text-3xl relative mt-2">
+                  {Math.round(weatherData.current.apparent_temperature)}º
+                </h3>
+                <p className="text-sm text-muted-foreground -mt-2 mb-2">
+                  Actual: {Math.round(weatherData.current.temperature_2m)}º
+                </p>
+                <Slider
+                  start={0}
+                  end={100}
+                  dotPercent={
+                    weatherData.current.apparent_temperature <
+                    weatherData.current.temperature_2m
+                      ? 100
+                      : 0
+                  }
+                  pillPercent={
+                    weatherData.current.apparent_temperature <
+                    weatherData.current.temperature_2m
+                      ? 0
+                      : 100
+                  }
+                  pillText={`${Math.round(
+                    weatherData.current.apparent_temperature
+                  )}º`}
+                  className="mt-auto mb-3"
+                  gradient={`linear-gradient(to ${
+                    weatherData.current.apparent_temperature <
+                    weatherData.current.temperature_2m
+                      ? "right"
+                      : "left"
+                  }, ${getColorForTemp(
+                    weatherData.current.apparent_temperature
+                  )} 0%, ${getColorForTemp(
+                    weatherData.current.temperature_2m
+                  )} 100%)`}
+                />
+              </>
+            ) : (
+              <Skeleton className="h-8 w-16" />
+            )}
+          </div>
           <div className="aspect-square border bg-card" />
           <div className="aspect-square border bg-card" />
         </div>
