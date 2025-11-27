@@ -402,9 +402,27 @@ export default function Home() {
                       ? 0
                       : 100
                   }
-                  pillText={`${Math.round(
-                    weatherData.current.apparent_temperature
-                  )}º`}
+                  pillText={
+                    <span className="flex items-center gap-2">
+                      <i
+                        className={`wi wi-direction-${
+                          weatherData.current.apparent_temperature <
+                          weatherData.current.temperature_2m
+                            ? "down"
+                            : "up"
+                        } scale-150`}
+                      />
+                      <span className="font-bold font-mono">
+                        {Math.round(
+                          Math.abs(
+                            weatherData.current.apparent_temperature -
+                              weatherData.current.temperature_2m
+                          )
+                        )}
+                        º
+                      </span>
+                    </span>
+                  }
                   className="mt-auto mb-3"
                   gradient={`linear-gradient(to ${
                     weatherData.current.apparent_temperature <

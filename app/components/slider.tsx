@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 type SliderProps = {
   gradient?: string;
   start: number;
@@ -6,7 +8,7 @@ type SliderProps = {
   dotColor?: string;
   className?: string;
   pillPercent?: number | null;
-  pillText?: string;
+  pillText?: ReactNode;
   pillBgColor?: string;
   pillTextColor?: string;
 };
@@ -64,7 +66,6 @@ export default function Slider({
         const position =
           range === 0 ? 0 : (gradientPercent - currentStop) / range;
 
-        // Simple linear interpolation between two hex colors
         const color1 = colors[i];
         const color2 = colors[i + 1];
 
@@ -108,9 +109,9 @@ export default function Slider({
           style={{ left: `${dot}%`, backgroundColor: dotColor }}
         />
       )}
-      {pill !== undefined && pillPercent !== null && pillText && (
+      {pill !== undefined && pillPercent !== null && pillText != null && (
         <div
-          className="absolute top-1/2 px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
+          className="absolute top-1/2 px-1.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap"
           style={{
             left: `${pill}%`,
             backgroundColor: getPillBgColor(),
