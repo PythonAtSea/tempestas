@@ -388,7 +388,7 @@ export default function Home() {
                 <h3 className="font-bold font-mono text-3xl relative mt-2">
                   {Math.round(weatherData.current.apparent_temperature)}º
                 </h3>
-                <p className="text-sm text-muted-foreground -mt-2 mb-2">
+                <p className="text-sm text-muted-foreground -mt-2 mb-2 font-bold">
                   Actual: {Math.round(weatherData.current.temperature_2m)}º
                 </p>
                 <Slider
@@ -448,7 +448,7 @@ export default function Home() {
                 <h3 className="font-bold font-mono text-3xl relative mt-2">
                   {Math.round(weatherData.daily.uv_index_max[0])}
                 </h3>
-                <p className="text-sm text-muted-foreground -mt-2 mb-2">
+                <p className="text-sm text-muted-foreground -mt-2 mb-2 font-bold">
                   {Math.round(weatherData.daily.uv_index_max[0]) < 3
                     ? "Low"
                     : Math.round(weatherData.daily.uv_index_max[0]) < 6
@@ -473,7 +473,121 @@ export default function Home() {
                   className="mt-auto mb-2"
                 />
               </div>
-              <div className="aspect-square border bg-card" />
+              <div className="aspect-square border bg-muted/20 p-3 flex flex-col items-center justify-center">
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="relative w-full h-full max-w-48 max-h-48">
+                    <div className="absolute inset-0 rounded-full" />
+
+                    {[...Array(180)].map((_, i) => {
+                      const angle = i * 2;
+                      const isCardinal = angle % 90 === 0;
+                      const isMajor = angle % 30 === 0;
+                      const isShown = isCardinal || isMajor || i % 3 === 0;
+
+                      if (!isShown) return null;
+
+                      const tickWidth = isCardinal || isMajor ? 2.5 : 2;
+                      const tickLength = isCardinal ? 12 : 6;
+
+                      return (
+                        <div
+                          key={i}
+                          className="absolute w-full h-full"
+                          style={{ transform: `rotate(${angle}deg)` }}
+                        >
+                          <div
+                            className={`absolute top-0 left-1/2 -translate-x-1/2 rounded-full ${
+                              isCardinal || isMajor
+                                ? "bg-muted-foreground"
+                                : "bg-muted-foreground/50"
+                            }`}
+                            style={{
+                              width: `${tickWidth}px`,
+                              height: `${tickLength}px`,
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="absolute top-3 font-bold text-sm text-muted-foreground font-mono">
+                        N
+                      </div>
+                      <div className="absolute bottom-3 font-bold text-sm text-muted-foreground font-mono">
+                        S
+                      </div>
+                      <div className="absolute right-4 font-bold text-sm text-muted-foreground font-mono">
+                        E
+                      </div>
+                      <div className="absolute left-4 font-bold text-sm text-muted-foreground font-mono">
+                        W
+                      </div>
+                    </div>
+                    {(() => {
+                      const ARROW_STROKE_WIDTH = 1.5;
+                      const ARROW_TIP_Y = 7;
+                      const ARROW_SHAFT_LENGTH = 15;
+                      const ARROW_HEAD_LENGTH = 6;
+                      const ARROW_HEAD_ANGLE = 45;
+                      const ARROW_CENTER_X = 50;
+
+                      const shaftEndY = ARROW_TIP_Y + ARROW_SHAFT_LENGTH;
+                      const headAngleRad = (ARROW_HEAD_ANGLE * Math.PI) / 180;
+                      const headOffsetX =
+                        Math.sin(headAngleRad) * ARROW_HEAD_LENGTH;
+                      const headOffsetY =
+                        Math.cos(headAngleRad) * ARROW_HEAD_LENGTH;
+
+                      return (
+                        <svg
+                          className="absolute w-full h-full"
+                          viewBox="0 0 100 100"
+                          style={{
+                            transform: `rotate(${weatherData.current.wind_direction_10m}deg)`,
+                          }}
+                        >
+                          <line
+                            x1={ARROW_CENTER_X}
+                            y1={ARROW_TIP_Y}
+                            x2={ARROW_CENTER_X}
+                            y2={shaftEndY}
+                            stroke="currentColor"
+                            strokeWidth={ARROW_STROKE_WIDTH}
+                            strokeLinecap="round"
+                          />
+                          <line
+                            x1={ARROW_CENTER_X}
+                            y1={ARROW_TIP_Y}
+                            x2={ARROW_CENTER_X - headOffsetX}
+                            y2={ARROW_TIP_Y + headOffsetY}
+                            stroke="currentColor"
+                            strokeWidth={ARROW_STROKE_WIDTH}
+                            strokeLinecap="round"
+                          />
+                          <line
+                            x1={ARROW_CENTER_X}
+                            y1={ARROW_TIP_Y}
+                            x2={ARROW_CENTER_X + headOffsetX}
+                            y2={ARROW_TIP_Y + headOffsetY}
+                            stroke="currentColor"
+                            strokeWidth={ARROW_STROKE_WIDTH}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      );
+                    })()}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-0">
+                      <h3 className="font-bold font-mono text-xl">
+                        {Math.round(weatherData.current.wind_speed_10m)}
+                      </h3>
+                      <p className="text-xs -mt-2 text-muted-foreground font-bold">
+                        Gusts: {Math.round(weatherData.current.wind_gusts_10m)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </>
