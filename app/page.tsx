@@ -385,68 +385,93 @@ export default function Home() {
                   <i className="wi wi-fw wi-thermometer" />
                   Feels like
                 </p>
-                <>
-                  <h3 className="font-bold font-mono text-3xl relative mt-2">
-                    {Math.round(weatherData.current.apparent_temperature)}º
-                  </h3>
-                  <p className="text-sm text-muted-foreground -mt-2 mb-2">
-                    Actual: {Math.round(weatherData.current.temperature_2m)}º
-                  </p>
-                  <Slider
-                    start={0}
-                    end={100}
-                    dotPercent={
-                      weatherData.current.apparent_temperature <
-                      weatherData.current.temperature_2m
-                        ? 100
-                        : 0
-                    }
-                    pillPercent={
-                      weatherData.current.apparent_temperature <
-                      weatherData.current.temperature_2m
-                        ? 0
-                        : 100
-                    }
-                    pillText={
-                      <span className="flex items-center">
-                        <i
-                          className={`wi wi-fw wi-direction-${
-                            weatherData.current.apparent_temperature <
-                            weatherData.current.temperature_2m
-                              ? "down"
-                              : "up"
-                          } scale-150`}
-                        />
-                        <span className="font-bold font-mono">
-                          {Math.round(
-                            Math.abs(
-                              weatherData.current.apparent_temperature -
-                                weatherData.current.temperature_2m
-                            )
-                          )}
-                          º
-                        </span>
+                <h3 className="font-bold font-mono text-3xl relative mt-2">
+                  {Math.round(weatherData.current.apparent_temperature)}º
+                </h3>
+                <p className="text-sm text-muted-foreground -mt-2 mb-2">
+                  Actual: {Math.round(weatherData.current.temperature_2m)}º
+                </p>
+                <Slider
+                  start={0}
+                  end={100}
+                  dotPercent={
+                    weatherData.current.apparent_temperature <
+                    weatherData.current.temperature_2m
+                      ? 100
+                      : 0
+                  }
+                  pillPercent={
+                    weatherData.current.apparent_temperature <
+                    weatherData.current.temperature_2m
+                      ? 0
+                      : 100
+                  }
+                  pillText={
+                    <span className="flex items-center">
+                      <i
+                        className={`wi wi-fw wi-direction-${
+                          weatherData.current.apparent_temperature <
+                          weatherData.current.temperature_2m
+                            ? "down"
+                            : "up"
+                        } scale-150`}
+                      />
+                      <span className="font-bold font-mono">
+                        {Math.round(
+                          Math.abs(
+                            weatherData.current.apparent_temperature -
+                              weatherData.current.temperature_2m
+                          )
+                        )}
+                        º
                       </span>
-                    }
-                    className="mt-auto mb-2"
-                    gradient={`linear-gradient(to ${
-                      weatherData.current.apparent_temperature <
-                      weatherData.current.temperature_2m
-                        ? "right"
-                        : "left"
-                    }, ${getColorForTemp(
-                      weatherData.current.apparent_temperature
-                    )} 0%, ${getColorForTemp(
-                      weatherData.current.temperature_2m
-                    )} 100%)`}
-                  />
-                </>
+                    </span>
+                  }
+                  className="mt-auto mb-2"
+                  gradient={`linear-gradient(to ${
+                    weatherData.current.apparent_temperature <
+                    weatherData.current.temperature_2m
+                      ? "right"
+                      : "left"
+                  }, ${getColorForTemp(
+                    weatherData.current.apparent_temperature
+                  )} 0%, ${getColorForTemp(
+                    weatherData.current.temperature_2m
+                  )} 100%)`}
+                />
               </div>
               <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
                 <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
                   <i className="wi wi-fw wi-day-sunny" />
                   UV Index
                 </p>
+                <h3 className="font-bold font-mono text-3xl relative mt-2">
+                  {Math.round(weatherData.daily.uv_index_max[0])}
+                </h3>
+                <p className="text-sm text-muted-foreground -mt-2 mb-2">
+                  {Math.round(weatherData.daily.uv_index_max[0]) < 3
+                    ? "Low"
+                    : Math.round(weatherData.daily.uv_index_max[0]) < 6
+                    ? "Moderate"
+                    : Math.round(weatherData.daily.uv_index_max[0]) < 8
+                    ? "High"
+                    : Math.round(weatherData.daily.uv_index_max[0]) < 11
+                    ? "Very High"
+                    : "Extreme"}
+                </p>
+                <Slider
+                  start={0}
+                  end={100}
+                  dotPercent={
+                    (Math.max(
+                      0,
+                      Math.min(11, weatherData.daily.uv_index_max[0])
+                    ) /
+                      11) *
+                    100
+                  }
+                  className="mt-auto mb-2"
+                />
               </div>
               <div className="aspect-square border bg-card" />
             </div>
