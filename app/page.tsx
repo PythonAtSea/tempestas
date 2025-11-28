@@ -473,8 +473,8 @@ export default function Home() {
                   className="mt-auto mb-2"
                 />
               </div>
-              <div className="aspect-square border bg-muted/20 p-3 flex flex-col items-center justify-center">
-                <div className="relative w-full h-full flex items-center justify-center">
+              <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
+                <div className="relative w-full h-full flex items-center justify-center flex-1">
                   <div className="relative w-full h-full max-w-48 max-h-48">
                     <div className="absolute inset-0 rounded-full" />
 
@@ -511,18 +511,43 @@ export default function Home() {
                     })}
 
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="absolute top-3 font-bold text-sm text-muted-foreground font-mono">
-                        N
-                      </div>
-                      <div className="absolute bottom-3 font-bold text-sm text-muted-foreground font-mono">
-                        S
-                      </div>
-                      <div className="absolute right-4 font-bold text-sm text-muted-foreground font-mono">
-                        E
-                      </div>
-                      <div className="absolute left-4 font-bold text-sm text-muted-foreground font-mono">
-                        W
-                      </div>
+                      {(() => {
+                        const windDir = weatherData.current.wind_direction_10m;
+                        const isNearCardinal = (target: number) => {
+                          const diff = Math.abs(
+                            ((windDir - target + 180) % 360) - 180
+                          );
+                          const opposite = (target + 180) % 360;
+                          const diffOpposite = Math.abs(
+                            ((windDir - opposite + 180) % 360) - 180
+                          );
+                          return diff < 10 || diffOpposite < 10;
+                        };
+                        return (
+                          <>
+                            {!isNearCardinal(0) && (
+                              <div className="absolute top-3 font-bold text-sm text-muted-foreground font-mono">
+                                N
+                              </div>
+                            )}
+                            {!isNearCardinal(180) && (
+                              <div className="absolute bottom-3 font-bold text-sm text-muted-foreground font-mono">
+                                S
+                              </div>
+                            )}
+                            {!isNearCardinal(90) && (
+                              <div className="absolute right-4 font-bold text-sm text-muted-foreground font-mono">
+                                E
+                              </div>
+                            )}
+                            {!isNearCardinal(270) && (
+                              <div className="absolute left-4 font-bold text-sm text-muted-foreground font-mono">
+                                W
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                     {(() => {
                       const ARROW_STROKE_WIDTH = 1.5;
