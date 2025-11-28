@@ -189,266 +189,270 @@ export default function Home() {
           </p>
         </div>
       </div>
-      <div className="p-6 w-full pb-0">
-        <p className="text-sm border border-b-0 p-4">
-          {conditionsSummary ? (
-            <span>{conditionsSummary}</span>
-          ) : weatherData ? (
-            <>
-              <Loader2 className="inline-block size-4 animate-spin mr-2" />
-              <span className="text-muted-foreground">Fetching summary...</span>
-            </>
-          ) : null}
-        </p>
-      </div>
-      <div className="w-full p-6 pt-0">
-        <div className="relative">
-          <div
-            ref={hourlyScrollRef}
-            onScroll={(e) => {
-              const scrollLeft = e.currentTarget.scrollLeft;
-              setShowScrollReset(scrollLeft > 50);
-            }}
-            className="w-full border overflow-x-auto overflow-y-hidden"
-          >
-            <div className="flex w-max gap-4 px-4 py-4">
-              {weatherData?.hourly.time
-                .filter((time) => {
-                  const date = new Date(time);
-                  const now = new Date();
-                  return date.getTime() > now.getTime() - 60 * 60 * 1000;
-                })
-                .map((time, i) => (
-                  <div
-                    key={i}
-                    className="shrink-0 flex flex-col items-center gap-2"
-                  >
-                    <div className="relative pb-3">
-                      <span
-                        className={`text-sm text-muted-foreground block text-center ${
-                          new Date(time).getDay() === new Date().getDay()
-                            ? "mt-1.5 -mb-1.5"
-                            : ""
-                        }`}
+      {weatherData && (
+        <>
+          <div className="p-6 w-full pb-0">
+            <p className="text-sm border border-b-0 p-4">
+              {conditionsSummary ? (
+                <span>{conditionsSummary}</span>
+              ) : (
+                <>
+                  <Loader2 className="inline-block size-4 animate-spin mr-2" />
+                  <span className="text-muted-foreground">
+                    Fetching summary...
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+          <div className="w-full p-6 pt-0">
+            <div className="relative">
+              <div
+                ref={hourlyScrollRef}
+                onScroll={(e) => {
+                  const scrollLeft = e.currentTarget.scrollLeft;
+                  setShowScrollReset(scrollLeft > 50);
+                }}
+                className="w-full border overflow-x-auto overflow-y-hidden"
+              >
+                <div className="flex w-max gap-4 px-4 py-4">
+                  {weatherData?.hourly.time
+                    .filter((time) => {
+                      const date = new Date(time);
+                      const now = new Date();
+                      return date.getTime() > now.getTime() - 60 * 60 * 1000;
+                    })
+                    .map((time, i) => (
+                      <div
+                        key={i}
+                        className="shrink-0 flex flex-col items-center gap-2"
                       >
-                        {new Date(time).toLocaleTimeString(undefined, {
-                          hour: "numeric",
-                          hour12: true,
-                        })}
-                      </span>
-                      {new Date(time).getDay() !== new Date().getDay() && (
-                        <span className="absolute left-1/2 transform -translate-x-1/2 text-xs font-bold uppercase text-muted-foreground">
-                          {new Date(time).toLocaleDateString(undefined, {
-                            weekday: "short",
-                          })}
+                        <div className="relative pb-3">
+                          <span
+                            className={`text-sm text-muted-foreground block text-center ${
+                              new Date(time).getDay() === new Date().getDay()
+                                ? "mt-1.5 -mb-1.5"
+                                : ""
+                            }`}
+                          >
+                            {new Date(time).toLocaleTimeString(undefined, {
+                              hour: "numeric",
+                              hour12: true,
+                            })}
+                          </span>
+                          {new Date(time).getDay() !== new Date().getDay() && (
+                            <span className="absolute left-1/2 transform -translate-x-1/2 text-xs font-bold uppercase text-muted-foreground">
+                              {new Date(time).toLocaleDateString(undefined, {
+                                weekday: "short",
+                              })}
+                            </span>
+                          )}
+                        </div>
+                        <i
+                          className={`wi wi-fw scale-125 ${
+                            getWeatherCodeDescription(
+                              weatherData?.hourly.weather_code[i]
+                            ).iconClass
+                          } py-2`}
+                        />
+                        <span className="font-mono font-bold relative">
+                          {Math.round(
+                            weatherData?.hourly.temperature_2m[i] ?? 0
+                          )
+                            .toString()
+                            .padStart(2, "\u00A0")}
+                          <span className="absolute top-0 left-full">º</span>
                         </span>
-                      )}
-                    </div>
-                    <i
-                      className={`wi wi-fw scale-125 ${
-                        getWeatherCodeDescription(
-                          weatherData?.hourly.weather_code[i]
-                        ).iconClass
-                      } py-2`}
-                    />
-                    <span className="font-mono font-bold relative">
-                      {Math.round(weatherData?.hourly.temperature_2m[i] ?? 0)
-                        .toString()
-                        .padStart(2, "\u00A0")}
-                      <span className="absolute top-0 left-full">º</span>
-                    </span>
-                  </div>
-                ))}
+                      </div>
+                    ))}
+                </div>
+              </div>
+              {showScrollReset && (
+                <button
+                  onClick={() => {
+                    if (hourlyScrollRef.current) {
+                      hourlyScrollRef.current.scrollTo({
+                        left: 0,
+                        behavior: "smooth",
+                      });
+                    }
+                  }}
+                  className="absolute left-4 top-9 -translate-y-1/2 bg-background border p-2 shadow-lg hover:bg-accent transition-colors"
+                  aria-label="Reset scroll position"
+                >
+                  <ChevronsLeft className="size-5" />
+                </button>
+              )}
             </div>
           </div>
-          {showScrollReset && (
-            <button
-              onClick={() => {
-                if (hourlyScrollRef.current) {
-                  hourlyScrollRef.current.scrollTo({
-                    left: 0,
-                    behavior: "smooth",
-                  });
-                }
-              }}
-              className="absolute left-4 top-9 -translate-y-1/2 bg-background border p-2 shadow-lg hover:bg-accent transition-colors"
-              aria-label="Reset scroll position"
-            >
-              <ChevronsLeft className="size-5" />
-            </button>
-          )}
-        </div>
-      </div>
-      <div className="w-full px-6 pb-6">
-        <div className="border">
-          <p className="p-2 font-bold text-muted-foreground flex flex-row items-center gap-2">
-            <Calendar className="inline-block size-4" />
-            14 day forecast
-          </p>
-          <div className="w-full">
-            {weatherData?.daily.time
-              .filter((time) => {
-                return (
-                  new Date(time).getTime() > new Date().setHours(0, 0, 0, 0)
-                );
-              })
-              .map((time, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center p-3 border-t"
-                >
-                  <div className="flex items-center gap-4 mr-4">
-                    <span className="w-9 text-sm">
-                      {(() => {
-                        const d = new Date(time);
-                        const t = new Date();
-                        if (
-                          d.getFullYear() === t.getFullYear() &&
-                          d.getMonth() === t.getMonth() &&
-                          d.getDate() === t.getDate()
-                        ) {
-                          return "Today";
-                        }
-                        return d.toLocaleDateString(undefined, {
-                          weekday: "short",
-                        });
-                      })()}
-                    </span>
-                    <i
-                      className={`wi wi-fw scale-125 ${
-                        getWeatherCodeDescription(
-                          weatherData?.daily.weather_code[i]
-                        ).iconClass
-                      }`}
-                    />
-                  </div>
-                  <span className="font-mono font-bold relative mr-2 text-muted-foreground">
-                    {"\u00A0".repeat(
-                      Math.max(
-                        0,
-                        maxLowWidth -
-                          Math.round(
-                            weatherData?.daily.temperature_2m_min[i]
-                          ).toString().length
-                      )
-                    )}
-                    {Math.round(weatherData?.daily.temperature_2m_min[i])}º
-                  </span>
-                  <TempSlider
-                    dotTemp={(() => {
-                      const d = new Date(time);
-                      const t = new Date();
-                      if (
-                        d.getFullYear() === t.getFullYear() &&
-                        d.getMonth() === t.getMonth() &&
-                        d.getDate() === t.getDate() &&
-                        weatherData?.current.temperature_2m !== undefined
-                      ) {
-                        return weatherData?.current.temperature_2m;
-                      } else {
-                        return null;
-                      }
-                    })()}
-                    minTemp={minTemp}
-                    maxTemp={maxTemp}
-                    lowTemp={weatherData?.daily.temperature_2m_min[i]}
-                    highTemp={weatherData?.daily.temperature_2m_max[i]}
-                    className="flex-1"
-                  />
-                  <span className="font-mono font-bold ml-2">
-                    {Math.round(weatherData?.daily.temperature_2m_max[i])}º
-                    {"\u00A0".repeat(
-                      Math.max(
-                        0,
-                        maxHighWidth -
-                          Math.round(
-                            weatherData?.daily.temperature_2m_max[i]
-                          ).toString().length
-                      )
-                    )}
-                  </span>
-                </div>
-              ))}
-          </div>
-        </div>
-      </div>
-      <div className="w-full px-6 pb-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
-            <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
-              <i className="wi wi-thermometer" />
-              Feels like
-            </p>
-            {weatherData ? (
-              <>
-                <h3 className="font-bold font-mono text-3xl relative mt-2">
-                  {Math.round(weatherData.current.apparent_temperature)}º
-                </h3>
-                <p className="text-sm text-muted-foreground -mt-2 mb-2">
-                  Actual: {Math.round(weatherData.current.temperature_2m)}º
-                </p>
-                <Slider
-                  start={0}
-                  end={100}
-                  dotPercent={
-                    weatherData.current.apparent_temperature <
-                    weatherData.current.temperature_2m
-                      ? 100
-                      : 0
-                  }
-                  pillPercent={
-                    weatherData.current.apparent_temperature <
-                    weatherData.current.temperature_2m
-                      ? 0
-                      : 100
-                  }
-                  pillText={
-                    <span className="flex items-center gap-2">
-                      <i
-                        className={`wi wi-direction-${
-                          weatherData.current.apparent_temperature <
-                          weatherData.current.temperature_2m
-                            ? "down"
-                            : "up"
-                        } scale-150`}
-                      />
-                      <span className="font-bold font-mono">
-                        {Math.round(
-                          Math.abs(
-                            weatherData.current.apparent_temperature -
-                              weatherData.current.temperature_2m
+          <div className="w-full px-6 pb-6">
+            <div className="border">
+              <p className="p-2 font-bold text-muted-foreground flex flex-row items-center gap-2">
+                <Calendar className="inline-block size-4" />
+                14 day forecast
+              </p>
+              <div className="w-full">
+                {weatherData?.daily.time
+                  .filter((time) => {
+                    return (
+                      new Date(time).getTime() > new Date().setHours(0, 0, 0, 0)
+                    );
+                  })
+                  .map((time, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center p-3 border-t"
+                    >
+                      <div className="flex items-center gap-4 mr-4">
+                        <span className="w-9 text-sm">
+                          {(() => {
+                            const d = new Date(time);
+                            const t = new Date();
+                            if (
+                              d.getFullYear() === t.getFullYear() &&
+                              d.getMonth() === t.getMonth() &&
+                              d.getDate() === t.getDate()
+                            ) {
+                              return "Today";
+                            }
+                            return d.toLocaleDateString(undefined, {
+                              weekday: "short",
+                            });
+                          })()}
+                        </span>
+                        <i
+                          className={`wi wi-fw scale-125 ${
+                            getWeatherCodeDescription(
+                              weatherData?.daily.weather_code[i]
+                            ).iconClass
+                          }`}
+                        />
+                      </div>
+                      <span className="font-mono font-bold relative mr-2 text-muted-foreground">
+                        {"\u00A0".repeat(
+                          Math.max(
+                            0,
+                            maxLowWidth -
+                              Math.round(
+                                weatherData?.daily.temperature_2m_min[i]
+                              ).toString().length
                           )
                         )}
-                        º
+                        {Math.round(weatherData?.daily.temperature_2m_min[i])}º
                       </span>
-                    </span>
-                  }
-                  className="mt-auto mb-2"
-                  gradient={`linear-gradient(to ${
-                    weatherData.current.apparent_temperature <
-                    weatherData.current.temperature_2m
-                      ? "right"
-                      : "left"
-                  }, ${getColorForTemp(
-                    weatherData.current.apparent_temperature
-                  )} 0%, ${getColorForTemp(
-                    weatherData.current.temperature_2m
-                  )} 100%)`}
-                />
-              </>
-            ) : (
-              <Skeleton className="h-8 w-16" />
-            )}
+                      <TempSlider
+                        dotTemp={(() => {
+                          const d = new Date(time);
+                          const t = new Date();
+                          if (
+                            d.getFullYear() === t.getFullYear() &&
+                            d.getMonth() === t.getMonth() &&
+                            d.getDate() === t.getDate() &&
+                            weatherData?.current.temperature_2m !== undefined
+                          ) {
+                            return weatherData?.current.temperature_2m;
+                          } else {
+                            return null;
+                          }
+                        })()}
+                        minTemp={minTemp}
+                        maxTemp={maxTemp}
+                        lowTemp={weatherData?.daily.temperature_2m_min[i]}
+                        highTemp={weatherData?.daily.temperature_2m_max[i]}
+                        className="flex-1"
+                      />
+                      <span className="font-mono font-bold ml-2">
+                        {Math.round(weatherData?.daily.temperature_2m_max[i])}º
+                        {"\u00A0".repeat(
+                          Math.max(
+                            0,
+                            maxHighWidth -
+                              Math.round(
+                                weatherData?.daily.temperature_2m_max[i]
+                              ).toString().length
+                          )
+                        )}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
-          <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
-            <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
-              <i className="wi wi-day-sunny" />
-              UV Index
-            </p>
+          <div className="w-full px-6 pb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
+                <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
+                  <i className="wi wi-fw wi-thermometer" />
+                  Feels like
+                </p>
+                <>
+                  <h3 className="font-bold font-mono text-3xl relative mt-2">
+                    {Math.round(weatherData.current.apparent_temperature)}º
+                  </h3>
+                  <p className="text-sm text-muted-foreground -mt-2 mb-2">
+                    Actual: {Math.round(weatherData.current.temperature_2m)}º
+                  </p>
+                  <Slider
+                    start={0}
+                    end={100}
+                    dotPercent={
+                      weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                        ? 100
+                        : 0
+                    }
+                    pillPercent={
+                      weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                        ? 0
+                        : 100
+                    }
+                    pillText={
+                      <span className="flex items-center">
+                        <i
+                          className={`wi wi-fw wi-direction-${
+                            weatherData.current.apparent_temperature <
+                            weatherData.current.temperature_2m
+                              ? "down"
+                              : "up"
+                          } scale-150`}
+                        />
+                        <span className="font-bold font-mono">
+                          {Math.round(
+                            Math.abs(
+                              weatherData.current.apparent_temperature -
+                                weatherData.current.temperature_2m
+                            )
+                          )}
+                          º
+                        </span>
+                      </span>
+                    }
+                    className="mt-auto mb-2"
+                    gradient={`linear-gradient(to ${
+                      weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                        ? "right"
+                        : "left"
+                    }, ${getColorForTemp(
+                      weatherData.current.apparent_temperature
+                    )} 0%, ${getColorForTemp(
+                      weatherData.current.temperature_2m
+                    )} 100%)`}
+                  />
+                </>
+              </div>
+              <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
+                <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
+                  <i className="wi wi-fw wi-day-sunny" />
+                  UV Index
+                </p>
+              </div>
+              <div className="aspect-square border bg-card" />
+            </div>
           </div>
-          <div className="aspect-square border bg-card" />
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
