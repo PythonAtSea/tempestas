@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Calendar, Loader2, Navigation, ChevronsLeft } from "lucide-react";
 import TempSlider from "./components/temp-slider";
 import { Skeleton } from "@/components/ui/skeleton";
-import { WeatherResponse } from "@/lib/types/weather";
+import { AlertsResponse, WeatherResponse } from "@/lib/types/weather";
 import { getWeatherCodeDescription } from "@/lib/weather-code";
 import Slider from "./components/slider";
 import { getColorForTemp } from "@/lib/get-color-for-temp";
@@ -24,6 +24,7 @@ export default function Home() {
   const [maxTemp, setMaxTemp] = useState(100);
   const [showScrollReset, setShowScrollReset] = useState(false);
   const [conditionsSummary, setConditionsSummary] = useState<string>("");
+  const [alertsData, setAlertsData] = useState<AlertsResponse | null>(null);
   const hourlyScrollRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -125,6 +126,25 @@ export default function Home() {
     return () => controller.abort();
   }, [weatherData]);
 
+  useEffect(() => {
+    if (!coords) return;
+    fetch(
+      `https://api.weather.gov/alerts/active?point=${coords.lat},${coords.lon}`,
+      {
+        headers: {
+          "User-Agent": "(hiems, pythonatsea@duck.com)",
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data: AlertsResponse) => {
+        setAlertsData(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching alerts:", err);
+      });
+  }, [coords]);
+
   return (
     <div className="flex flex-col items-center min-h-screen">
       <div className="mt-10 ">
@@ -174,17 +194,39 @@ export default function Home() {
           ).weatherCondition
         }
       </h4>
-      <div className="p-6 w-full pb-0">
-        <div className="border border-red-500 w-full">
-          <div className="bg-red-500 mt-0 p-2 px-4">
-            [PLACEHOLDER] Tornado Warning
-          </div>
-          <p className="p-4">
-            There is a tornado warning in effect for Banana County, East
-            Caroline from 26:15 till 45:00
-          </p>
-        </div>
-      </div>
+      {alertsData &&
+        alertsData.features &&
+        alertsData.features.map((alert, i) => {
+          const severity = alert.properties.severity;
+          const isRed = severity === "Extreme" || severity === "Severe";
+          const isYellow = severity === "Moderate" || severity === "Unknown";
+          const borderClass = isRed
+            ? "border-red-500"
+            : isYellow
+            ? "border-yellow-500"
+            : "border";
+          const bgClass = isRed
+            ? "bg-red-500/20"
+            : isYellow
+            ? "bg-yellow-500/20"
+            : "bg-muted/20";
+          const headerBgClass = isRed
+            ? "bg-red-500"
+            : isYellow
+            ? "bg-yellow-500"
+            : "bg-muted";
+          const textClass = isYellow ? "text-black" : "text-white";
+          return (
+            <div className="p-6 w-full pb-0" key={i}>
+              <div className={`border ${borderClass} w-full ${bgClass}`}>
+                <div className={`${headerBgClass} mt-0 p-2 px-4 ${textClass}`}>
+                  {alert.properties.event || "Weather Alert"}
+                </div>
+                <p className="p-4">{alert.properties.headline || ""}</p>
+              </div>
+            </div>
+          );
+        })}
       {weatherData && (
         <>
           <div className="p-6 w-full pb-0">

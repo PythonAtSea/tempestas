@@ -143,3 +143,70 @@ export interface DailyData {
   precipitation_hours: number[];
   precipitation_probability_max: number[];
 }
+
+// NWS Weather Alert Interfaces
+
+export interface AlertsResponse {
+  type: "FeatureCollection";
+  features: AlertFeature[];
+  title?: string;
+  updated?: string;
+}
+
+export interface AlertFeature {
+  id: string;
+  type: "Feature";
+  geometry: {
+    type: "Polygon" | "MultiPolygon" | null;
+    coordinates: number[][][] | number[][][][] | null;
+  };
+  properties: AlertProperties;
+}
+
+export interface AlertProperties {
+  id: string;
+  areaDesc: string;
+  affectedZones: string[];
+  references?: AlertReference[];
+  sent: string;
+  effective: string | null;
+  onset: string | null;
+  expires: string | null;
+  ends: string | null;
+
+  status: "Actual" | "Exercise" | "System" | "Test" | "Draft";
+  messageType: "Alert" | "Update" | "Cancel";
+  category:
+    | "Met"
+    | "Geo"
+    | "Safety"
+    | "Security"
+    | "Rescue"
+    | "Fire"
+    | "Health"
+    | "Env"
+    | "Transport"
+    | "Infra"
+    | "CBRNE"
+    | "Other";
+  severity: "Extreme" | "Severe" | "Moderate" | "Minor" | "Unknown";
+  certainty: "Observed" | "Likely" | "Possible" | "Unlikely" | "Unknown";
+  urgency: "Immediate" | "Expected" | "Future" | "Past" | "Unknown";
+
+  event: string;
+  sender: string;
+  senderName: string;
+  headline?: string;
+  description?: string;
+  instruction?: string;
+
+  response: string | null;
+
+  parameters?: Record<string, string[]>;
+}
+
+export interface AlertReference {
+  id: string;
+  identifier: string;
+  sender: string;
+}
