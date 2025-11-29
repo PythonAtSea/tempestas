@@ -648,6 +648,215 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+              <div className="aspect-square border bg-muted/20 p-3 flex flex-col overflow-hidden relative">
+                <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
+                  <i
+                    className={`wi wi-fw ${
+                      weatherData?.current?.is_day === 1
+                        ? "wi-sunset"
+                        : "wi-sunrise"
+                    }`}
+                  />
+                  {weatherData?.current?.is_day === 1 ? "Sunset" : "Sunrise"}
+                </p>
+                <h3 className="font-bold font-mono text-3xl relative mt-2">
+                  {new Date(
+                    weatherData?.daily[
+                      weatherData?.current?.is_day === 1 ? "sunset" : "sunrise"
+                    ][0]
+                  )
+                    .toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                    .replace(/\s?(AM|PM)$/i, "")}
+                  <span className="text-muted-foreground text-lg">
+                    {weatherData?.current?.is_day === 1 ? "PM" : "AM"}
+                  </span>
+                </h3>
+                <p className="text-muted-foreground text-xs mt-auto font-bold">
+                  {weatherData?.current?.is_day === 1 ? (
+                    <span>
+                      Sunrise at{" "}
+                      {new Date(weatherData?.daily.sunrise[1])
+                        .toLocaleTimeString(undefined, {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                        .replace(/\s?(AM|PM)$/i, "")}
+                      <span className="text-muted-foreground text-xs">
+                        {` ${
+                          new Date(weatherData?.daily.sunrise[1]).getHours() >=
+                          12
+                            ? "PM"
+                            : "AM"
+                        }`}
+                      </span>
+                    </span>
+                  ) : (
+                    <span>
+                      Sunset at{" "}
+                      {new Date(weatherData?.daily.sunset[0])
+                        .toLocaleTimeString(undefined, {
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                        .replace(/\s?(AM|PM)$/i, "")}
+                      <span className="text-muted-foreground text-xs">
+                        {` ${
+                          new Date(weatherData?.daily.sunset[0]).getHours() >=
+                          12
+                            ? "PM"
+                            : "AM"
+                        }`}
+                      </span>
+                    </span>
+                  )}
+                </p>
+                {(() => {
+                  const eventTime = new Date(
+                    weatherData?.daily[
+                      weatherData?.current?.is_day === 1 ? "sunset" : "sunrise"
+                    ][0]
+                  );
+                  const hours = eventTime.getHours();
+                  const minutes = eventTime.getMinutes();
+                  const totalMinutes = hours * 60 + minutes;
+                  const xPos = (totalMinutes / (24 * 60)) * 100;
+                  const yPos = 13 + 12 * Math.cos((xPos / 100) * 2 * Math.PI);
+
+                  // Current time position
+                  const now = new Date();
+                  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+                  const nowXPos = (nowMinutes / (24 * 60)) * 100;
+                  const nowYPos =
+                    13 + 12 * Math.cos((nowXPos / 100) * 2 * Math.PI);
+
+                  const wavePath = (() => {
+                    const points: string[] = [];
+                    const steps = 200;
+                    for (let i = 0; i <= steps; i++) {
+                      const x = (i / steps) * 100;
+                      const y =
+                        9 + 13 + 12 * Math.cos((i / steps) * 2 * Math.PI);
+                      points.push(`${i === 0 ? "M" : "L"}${x},${y}`);
+                    }
+                    return points.join(" ");
+                  })();
+
+                  const padding = 9;
+                  const adjustedYPos = yPos + padding;
+                  const adjustedNowYPos = nowYPos + padding;
+
+                  return (
+                    <>
+                      <svg
+                        className="absolute left-0 right-0 top-1/2 w-full translate-y-1/5"
+                        viewBox="0 0 100 35"
+                        preserveAspectRatio="none"
+                        style={{ height: "20%" }}
+                      >
+                        <defs>
+                          <linearGradient
+                            id="aboveGradient"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="white"
+                              stopOpacity="0.7"
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="white"
+                              stopOpacity="0.0"
+                            />
+                          </linearGradient>
+                          <linearGradient
+                            id="belowGradient"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="white"
+                              stopOpacity="0.3"
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="white"
+                              stopOpacity="0.05"
+                            />
+                          </linearGradient>
+                          <clipPath id="clipAbove">
+                            <rect
+                              x="0"
+                              y="0"
+                              width="100"
+                              height={adjustedYPos}
+                            />
+                          </clipPath>
+                          <clipPath id="clipBelow">
+                            <rect
+                              x="0"
+                              y={adjustedYPos}
+                              width="100"
+                              height={35 - adjustedYPos}
+                            />
+                          </clipPath>
+                        </defs>
+                        <path
+                          d={wavePath}
+                          fill="none"
+                          stroke="url(#aboveGradient)"
+                          strokeWidth="2"
+                          vectorEffect="non-scaling-stroke"
+                          clipPath="url(#clipAbove)"
+                        />
+                        <path
+                          d={wavePath}
+                          fill="none"
+                          stroke="url(#belowGradient)"
+                          strokeWidth="2"
+                          vectorEffect="non-scaling-stroke"
+                          clipPath="url(#clipBelow)"
+                        />
+                        <line
+                          x1={0}
+                          y1={adjustedYPos}
+                          x2={100}
+                          y2={adjustedYPos}
+                          stroke="var(--muted-foreground)"
+                          strokeWidth="1.5"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      </svg>
+                      <div className="absolute left-0 right-0 top-1/2 w-full translate-y-1/5 h-[20%] pointer-events-none">
+                        <div
+                          className={`absolute -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${
+                            weatherData?.current?.is_day === 0
+                              ? "bg-black"
+                              : "bg-white"
+                          }`}
+                          style={{
+                            boxShadow: "0px 0px 2px 2px white",
+                            left: `${nowXPos}%`,
+                            top: `${(adjustedNowYPos / 35) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         </>
