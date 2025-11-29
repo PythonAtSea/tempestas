@@ -125,6 +125,7 @@ export default function Home() {
       })
       .catch((err) => {
         if (err?.name === "AbortError") return;
+        setConditionsSummary("DND");
         console.error("Error getting conditions summary:", err);
       });
 
@@ -234,20 +235,22 @@ export default function Home() {
         })}
       {weatherData && (
         <>
-          <div className="p-6 w-full pb-0">
-            <p className="text-sm border border-b-0 p-4 bg-muted/20">
-              {conditionsSummary ? (
-                <span>{conditionsSummary}</span>
-              ) : (
-                <>
-                  <Loader2 className="inline-block size-4 animate-spin mr-2" />
-                  <span className="text-muted-foreground">
-                    Fetching summary...
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
+          {conditionsSummary !== "DND" && (
+            <div className="p-6 w-full pb-0">
+              <p className="text-sm border border-b-0 p-4 bg-muted/20">
+                {conditionsSummary ? (
+                  <span>{conditionsSummary}</span>
+                ) : (
+                  <>
+                    <Loader2 className="inline-block size-4 animate-spin mr-2" />
+                    <span className="text-muted-foreground">
+                      Fetching summary...
+                    </span>
+                  </>
+                )}
+              </p>
+            </div>
+          )}
           <div className="w-full p-6 pt-0">
             <div className="relative">
               <div
