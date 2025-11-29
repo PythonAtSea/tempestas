@@ -93,7 +93,9 @@ export default function Slider({
 
   return (
     <div
-      className={`relative w-full rounded-full h-2 border ${className ?? ""}`}
+      className={`relative w-full rounded-full h-2 bg-muted/90 ${
+        className ?? ""
+      }`}
     >
       <div
         className="absolute top-0 h-full rounded-full"

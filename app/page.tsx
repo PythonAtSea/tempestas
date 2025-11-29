@@ -388,8 +388,40 @@ export default function Home() {
                   Actual: {Math.round(weatherData.current.temperature_2m)}º
                 </p>
                 <Slider
-                  start={0}
-                  end={100}
+                  start={Math.min(
+                    weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                      ? 100
+                      : 0,
+                    weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                      ? 100 -
+                          ((weatherData.current.temperature_2m -
+                            weatherData.current.apparent_temperature) /
+                            15) *
+                            100
+                      : ((weatherData.current.apparent_temperature -
+                          weatherData.current.temperature_2m) /
+                          15) *
+                          100
+                  )}
+                  end={Math.max(
+                    weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                      ? 100
+                      : 0,
+                    weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                      ? 100 -
+                          ((weatherData.current.temperature_2m -
+                            weatherData.current.apparent_temperature) /
+                            15) *
+                            100
+                      : ((weatherData.current.apparent_temperature -
+                          weatherData.current.temperature_2m) /
+                          15) *
+                          100
+                  )}
                   dotPercent={
                     weatherData.current.apparent_temperature <
                     weatherData.current.temperature_2m
@@ -399,8 +431,15 @@ export default function Home() {
                   pillPercent={
                     weatherData.current.apparent_temperature <
                     weatherData.current.temperature_2m
-                      ? 0
-                      : 100
+                      ? 100 -
+                        ((weatherData.current.temperature_2m -
+                          weatherData.current.apparent_temperature) /
+                          15) *
+                          100
+                      : ((weatherData.current.apparent_temperature -
+                          weatherData.current.temperature_2m) /
+                          15) *
+                        100
                   }
                   pillText={
                     <span className="flex items-center">
@@ -424,16 +463,22 @@ export default function Home() {
                     </span>
                   }
                   className="mt-auto mb-2"
-                  gradient={`linear-gradient(to ${
-                    weatherData.current.apparent_temperature <
-                    weatherData.current.temperature_2m
-                      ? "right"
-                      : "left"
-                  }, ${getColorForTemp(
-                    weatherData.current.apparent_temperature
-                  )} 0%, ${getColorForTemp(
-                    weatherData.current.temperature_2m
-                  )} 100%)`}
+                  gradient={(() => {
+                    const apparentColor = getColorForTemp(
+                      weatherData.current.apparent_temperature
+                    );
+                    const actualColor = getColorForTemp(
+                      weatherData.current.temperature_2m
+                    );
+                    if (
+                      weatherData.current.apparent_temperature <
+                      weatherData.current.temperature_2m
+                    ) {
+                      return `linear-gradient(to right, ${apparentColor} 0%, ${actualColor} 100%)`;
+                    } else {
+                      return `linear-gradient(to right, ${actualColor} 0%, ${apparentColor} 100%)`;
+                    }
+                  })()}
                 />
               </div>
               <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
