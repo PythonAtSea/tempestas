@@ -1,0 +1,171 @@
+"use client";
+
+import { WeatherResponse } from "@/lib/types/weather";
+
+interface WindWidgetProps {
+  weatherData: WeatherResponse;
+}
+
+export default function WindWidget({ weatherData }: WindWidgetProps) {
+  const windDir = weatherData.current.wind_direction_10m;
+
+  const isNearCardinal = (target: number) => {
+    const diff = Math.abs(((windDir - target + 180) % 360) - 180);
+    const opposite = (target + 180) % 360;
+    const diffOpposite = Math.abs(((windDir - opposite + 180) % 360) - 180);
+    return diff < 10 || diffOpposite < 10;
+  };
+
+  const ARROW_STROKE_WIDTH = 1.5;
+  const ARROW_TIP_Y = 7;
+  const ARROW_SHAFT_LENGTH = 15;
+  const ARROW_HEAD_LENGTH = 6;
+  const ARROW_HEAD_ANGLE = 45;
+  const ARROW_CENTER_X = 50;
+  const OPPOSITE_TIP_SHORT = 5;
+
+  const shaftEndY = ARROW_TIP_Y + ARROW_SHAFT_LENGTH;
+  const headAngleRad = (ARROW_HEAD_ANGLE * Math.PI) / 180;
+  const headOffsetX = Math.sin(headAngleRad) * ARROW_HEAD_LENGTH;
+  const headOffsetY = Math.cos(headAngleRad) * ARROW_HEAD_LENGTH;
+
+  const OPPOSITE_TIP_Y = 100 - ARROW_TIP_Y - OPPOSITE_TIP_SHORT;
+  const oppositeShaftEndY = OPPOSITE_TIP_Y - ARROW_SHAFT_LENGTH + OPPOSITE_TIP_SHORT;
+
+  return (
+    <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
+      <div className="relative w-full h-full flex items-center justify-center flex-1">
+        <div className="relative w-full h-full max-w-48 max-h-48">
+          <div className="absolute inset-0 rounded-full" />
+
+          {[...Array(180)].map((_, i) => {
+            const angle = i * 2;
+            const isCardinal = angle % 90 === 0;
+            const isMajor = angle % 30 === 0;
+            const isShown = isCardinal || isMajor || i % 3 === 0;
+
+            if (!isShown) return null;
+
+            const tickWidth = isCardinal || isMajor ? 2.5 : 2;
+            const tickLength = isCardinal ? 12 : 6;
+
+            return (
+              <div
+                key={i}
+                className="absolute w-full h-full"
+                style={{ transform: `rotate(${angle}deg)` }}
+              >
+                <div
+                  className={`absolute top-0 left-1/2 -translate-x-1/2 rounded-full ${
+                    isCardinal || isMajor
+                      ? "bg-muted-foreground"
+                      : "bg-muted-foreground/50"
+                  }`}
+                  style={{
+                    width: `${tickWidth}px`,
+                    height: `${tickLength}px`,
+                  }}
+                />
+              </div>
+            );
+          })}
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            {!isNearCardinal(0) && (
+              <div className="absolute top-3 font-bold text-sm text-muted-foreground font-mono">
+                N
+              </div>
+            )}
+            {!isNearCardinal(180) && (
+              <div className="absolute bottom-3 font-bold text-sm text-muted-foreground font-mono">
+                S
+              </div>
+            )}
+            {!isNearCardinal(90) && (
+              <div className="absolute right-4 font-bold text-sm text-muted-foreground font-mono">
+                E
+              </div>
+            )}
+            {!isNearCardinal(270) && (
+              <div className="absolute left-4 font-bold text-sm text-muted-foreground font-mono">
+                W
+              </div>
+            )}
+          </div>
+
+          <svg
+            className="absolute w-full h-full"
+            viewBox="0 0 100 100"
+            style={{
+              transform: `rotate(${windDir}deg)`,
+            }}
+          >
+            <line
+              x1={ARROW_CENTER_X}
+              y1={ARROW_TIP_Y}
+              x2={ARROW_CENTER_X}
+              y2={shaftEndY}
+              stroke="currentColor"
+              strokeWidth={ARROW_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
+            <line
+              x1={ARROW_CENTER_X}
+              y1={ARROW_TIP_Y}
+              x2={ARROW_CENTER_X - headOffsetX}
+              y2={ARROW_TIP_Y + headOffsetY}
+              stroke="currentColor"
+              strokeWidth={ARROW_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
+            <line
+              x1={ARROW_CENTER_X}
+              y1={ARROW_TIP_Y}
+              x2={ARROW_CENTER_X + headOffsetX}
+              y2={ARROW_TIP_Y + headOffsetY}
+              stroke="currentColor"
+              strokeWidth={ARROW_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
+            <line
+              x1={ARROW_CENTER_X}
+              y1={OPPOSITE_TIP_Y}
+              x2={ARROW_CENTER_X}
+              y2={oppositeShaftEndY}
+              stroke="currentColor"
+              strokeWidth={ARROW_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
+            <line
+              x1={ARROW_CENTER_X}
+              y1={OPPOSITE_TIP_Y}
+              x2={ARROW_CENTER_X - headOffsetX}
+              y2={OPPOSITE_TIP_Y + headOffsetY}
+              stroke="currentColor"
+              strokeWidth={ARROW_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
+            <line
+              x1={ARROW_CENTER_X}
+              y1={OPPOSITE_TIP_Y}
+              x2={ARROW_CENTER_X + headOffsetX}
+              y2={OPPOSITE_TIP_Y + headOffsetY}
+              stroke="currentColor"
+              strokeWidth={ARROW_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
+          </svg>
+
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0">
+            <h3 className="font-bold font-mono text-xl">
+              {Math.round(weatherData.current.wind_speed_10m)}
+            </h3>
+            <p className="text-xs -mt-2 text-muted-foreground font-bold">
+              Gusts: {Math.round(weatherData.current.wind_gusts_10m)}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
