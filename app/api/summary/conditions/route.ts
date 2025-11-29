@@ -16,11 +16,11 @@ export async function POST(request: NextRequest) {
     const formattedWeather = formatWeatherForLLM(weatherData);
 
     const response = await client.chat.completions.create({
-      model: "qwen/qwen3-32b",
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",
-          content: `You are a helpful weather assistant. Provide a brief, conversational summary of the current conditions and upcoming weather based on the data provided. Try not to exceed 50 tokens in your output, but prioritize clarity. Hard limit 75 tokens. The current unit is Fahrenheit, the user knows this. Always use complete sentences, but remain very professional. Do NOT use ANY data not given by the next prompt. ${
+          content: `You are a helpful weather assistant. Provide a brief, conversational summary of the current conditions and upcoming weather based on the data provided. Try not to exceed 20 tokens in your output, but prioritize clarity. Hard limit 35 tokens. The current unit is Fahrenheit format temps as [TEMP]º. Always use complete sentences, but remain professional. Do NOT use ANY data not given by the next prompt. ${
             previousPrompt &&
             "I have also included the previous summary for context. If only minor changes exist, ALWAYS just slot the new data into the previous summary without changing the layout at all. If there are major changes, you may modify it, but minimize the impact the best you can."
           } EXAMPLE: It is mostly sunny through the afternoon, with wind gusts up to 12 mph, and a high of 75°. `,
