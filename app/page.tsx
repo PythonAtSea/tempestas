@@ -55,7 +55,12 @@ export default function Home() {
       .then((response) => response.json())
       .then((data) => {
         if (!data?.address) return;
-        setLocationName(data.address.City);
+        setLocationName(
+          data.address.City ||
+            data.address.SubRegion ||
+            data.address.Region ||
+            "Unknown Location"
+        );
       })
       .catch((err) => {
         if (err?.name === "AbortError") return;
