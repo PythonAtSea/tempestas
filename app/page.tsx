@@ -54,11 +54,7 @@ export default function Home() {
       .then((response) => response.json())
       .then((data) => {
         if (!data?.address) return;
-        setLocationName(
-          data.address.City +
-            ", " +
-            (data.address.RegionAbbr || data.address.Region)
-        );
+        setLocationName(data.address.City);
       })
       .catch((err) => {
         if (err?.name === "AbortError") return;
@@ -728,7 +724,6 @@ export default function Home() {
                   const xPos = (totalMinutes / (24 * 60)) * 100;
                   const yPos = 13 + 12 * Math.cos((xPos / 100) * 2 * Math.PI);
 
-                  // Current time position
                   const now = new Date();
                   const nowMinutes = now.getHours() * 60 + now.getMinutes();
                   const nowXPos = (nowMinutes / (24 * 60)) * 100;
