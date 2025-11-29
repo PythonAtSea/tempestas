@@ -512,7 +512,7 @@ export default function Home() {
                   pillText={
                     <span className="flex items-center">
                       <i
-                        className={`wi wi-fw wi-direction-${
+                        className={`-ml-1 wi wi-fw wi-direction-${
                           weatherData.current.apparent_temperature <
                           weatherData.current.temperature_2m
                             ? "down"
