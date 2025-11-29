@@ -826,6 +826,11 @@ export default function Home() {
                   )}
                 </p>
                 {(() => {
+                  const svgHeight = 50;
+                  const waveAmplitude = 22;
+                  const waveCenterY = svgHeight / 2;
+                  const padding = 7;
+
                   const eventTime = new Date(
                     weatherData?.daily[
                       weatherData?.current?.is_day === 1 ? "sunset" : "sunrise"
@@ -835,13 +840,16 @@ export default function Home() {
                   const minutes = eventTime.getMinutes();
                   const totalMinutes = hours * 60 + minutes;
                   const xPos = (totalMinutes / (24 * 60)) * 100;
-                  const yPos = 13 + 12 * Math.cos((xPos / 100) * 2 * Math.PI);
+                  const yPos =
+                    waveCenterY +
+                    waveAmplitude * Math.cos((xPos / 100) * 2 * Math.PI);
 
                   const now = new Date();
                   const nowMinutes = now.getHours() * 60 + now.getMinutes();
                   const nowXPos = (nowMinutes / (24 * 60)) * 100;
                   const nowYPos =
-                    13 + 12 * Math.cos((nowXPos / 100) * 2 * Math.PI);
+                    waveCenterY +
+                    waveAmplitude * Math.cos((nowXPos / 100) * 2 * Math.PI);
 
                   const wavePath = (() => {
                     const points: string[] = [];
@@ -849,23 +857,25 @@ export default function Home() {
                     for (let i = 0; i <= steps; i++) {
                       const x = (i / steps) * 100;
                       const y =
-                        9 + 13 + 12 * Math.cos((i / steps) * 2 * Math.PI);
+                        padding +
+                        waveCenterY +
+                        waveAmplitude * Math.cos((i / steps) * 2 * Math.PI);
                       points.push(`${i === 0 ? "M" : "L"}${x},${y}`);
                     }
                     return points.join(" ");
                   })();
 
-                  const padding = 9;
                   const adjustedYPos = yPos + padding;
                   const adjustedNowYPos = nowYPos + padding;
+                  const totalSvgHeight = svgHeight + padding * 2;
 
                   return (
                     <>
                       <svg
-                        className="absolute left-0 right-0 top-1/2 w-full translate-y-1/5"
-                        viewBox="0 0 100 35"
+                        className="absolute left-0 right-0 top-1/2 w-full"
+                        viewBox={`0 0 100 ${totalSvgHeight}`}
                         preserveAspectRatio="none"
-                        style={{ height: "20%" }}
+                        style={{ height: "35%" }}
                       >
                         <defs>
                           <linearGradient
@@ -901,7 +911,7 @@ export default function Home() {
                             <stop
                               offset="100%"
                               stopColor="white"
-                              stopOpacity="0.05"
+                              stopOpacity="0.02"
                             />
                           </linearGradient>
                           <clipPath id="clipAbove">
@@ -917,7 +927,7 @@ export default function Home() {
                               x="0"
                               y={adjustedYPos}
                               width="100"
-                              height={35 - adjustedYPos}
+                              height={totalSvgHeight - adjustedYPos}
                             />
                           </clipPath>
                         </defs>
@@ -947,7 +957,7 @@ export default function Home() {
                           vectorEffect="non-scaling-stroke"
                         />
                       </svg>
-                      <div className="absolute left-0 right-0 top-1/2 w-full translate-y-1/5 h-[20%] pointer-events-none">
+                      <div className="absolute left-0 right-0 top-1/2 w-full h-[35%] pointer-events-none">
                         <div
                           className={`absolute -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${
                             weatherData?.current?.is_day === 0
@@ -957,7 +967,7 @@ export default function Home() {
                           style={{
                             boxShadow: "0px 0px 2px 2px white",
                             left: `${nowXPos}%`,
-                            top: `${(adjustedNowYPos / 35) * 100}%`,
+                            top: `${(adjustedNowYPos / totalSvgHeight) * 100}%`,
                           }}
                         />
                       </div>
