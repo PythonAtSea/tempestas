@@ -46,9 +46,22 @@ export default function Home() {
         .then((response) => response.json())
         .then((data: WeatherResponse) => {
           setWeatherData(data);
-          setMinTemp(Math.min(...(data.daily.temperature_2m_min ?? [0])));
+          const todayStart = new Date().setHours(0, 0, 0, 0);
+          const displayedIndices = data.daily.time
+            .map((time, i) => ({ time, i }))
+            .filter(({ time }) => new Date(time).getTime() > todayStart)
+            .map(({ i }) => i);
+
+          const displayedMins = displayedIndices.map(
+            (i) => data.daily.temperature_2m_min[i]
+          );
+          const displayedMaxs = displayedIndices.map(
+            (i) => data.daily.temperature_2m_max[i]
+          );
+
+          setMinTemp(Math.min(...(displayedMins.length ? displayedMins : [0])));
           setMaxTemp(
-            Math.max(...(data.daily.temperature_2m_max ?? [100])) ?? 100
+            Math.max(...(displayedMaxs.length ? displayedMaxs : [100]))
           );
           setMaxLowWidth(
             Math.max(
@@ -391,14 +404,15 @@ export default function Home() {
               </p>
               <div className="w-full">
                 {weatherData?.daily.time
-                  .filter((time) => {
+                  .map((time, originalIndex) => ({ time, originalIndex }))
+                  .filter(({ time }) => {
                     return (
                       new Date(time).getTime() > new Date().setHours(0, 0, 0, 0)
                     );
                   })
-                  .map((time, i) => (
+                  .map(({ time, originalIndex }) => (
                     <div
-                      key={i}
+                      key={originalIndex}
                       className="flex justify-between items-center p-3 border-t"
                     >
                       <div className="flex items-center gap-4 mr-4">
@@ -421,7 +435,7 @@ export default function Home() {
                         <i
                           className={`wi wi-fw scale-125 ${
                             getWeatherCodeDescription(
-                              weatherData?.daily.weather_code[i]
+                              weatherData?.daily.weather_code[originalIndex]
                             ).iconClass
                           }`}
                         />
@@ -432,11 +446,16 @@ export default function Home() {
                             0,
                             maxLowWidth -
                               Math.round(
-                                weatherData?.daily.temperature_2m_min[i]
+                                weatherData?.daily.temperature_2m_min[
+                                  originalIndex
+                                ]
                               ).toString().length
                           )
                         )}
-                        {Math.round(weatherData?.daily.temperature_2m_min[i])}º
+                        {Math.round(
+                          weatherData?.daily.temperature_2m_min[originalIndex]
+                        )}
+                        º
                       </span>
                       <TempSlider
                         dotTemp={(() => {
@@ -455,18 +474,27 @@ export default function Home() {
                         })()}
                         minTemp={minTemp}
                         maxTemp={maxTemp}
-                        lowTemp={weatherData?.daily.temperature_2m_min[i]}
-                        highTemp={weatherData?.daily.temperature_2m_max[i]}
+                        lowTemp={
+                          weatherData?.daily.temperature_2m_min[originalIndex]
+                        }
+                        highTemp={
+                          weatherData?.daily.temperature_2m_max[originalIndex]
+                        }
                         className="flex-1"
                       />
                       <span className="font-mono font-bold ml-2">
-                        {Math.round(weatherData?.daily.temperature_2m_max[i])}º
+                        {Math.round(
+                          weatherData?.daily.temperature_2m_max[originalIndex]
+                        )}
+                        º
                         {"\u00A0".repeat(
                           Math.max(
                             0,
                             maxHighWidth -
                               Math.round(
-                                weatherData?.daily.temperature_2m_max[i]
+                                weatherData?.daily.temperature_2m_max[
+                                  originalIndex
+                                ]
                               ).toString().length
                           )
                         )}
