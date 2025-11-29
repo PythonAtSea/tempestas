@@ -1,5 +1,11 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { Calendar, Loader2, Navigation, ChevronsLeft } from "lucide-react";
 import TempSlider from "./components/temp-slider";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,7 +31,70 @@ export default function Home() {
   const [showScrollReset, setShowScrollReset] = useState(false);
   const [conditionsSummary, setConditionsSummary] = useState<string>("");
   const [alertsData, setAlertsData] = useState<AlertsResponse | null>(null);
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState<number>(60000);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const hourlyScrollRef = useRef<HTMLDivElement>(null);
+
+  const refreshData = useCallback(
+    (signal?: AbortSignal) => {
+      if (!coords) return;
+
+      fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant,wind_gusts_10m_max,daylight_duration,sunshine_duration,uv_index_max,uv_index_clear_sky_max,showers_sum,snowfall_sum,rain_sum,precipitation_sum,precipitation_hours,precipitation_probability_max&hourly=temperature_2m,weather_code,apparent_temperature,relative_humidity_2m,dew_point_2m,pressure_msl,cloud_cover,visibility,precipitation,precipitation_probability,rain,showers,snowfall,snow_depth,wind_speed_10m,wind_gusts_10m,surface_pressure&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,rain,showers,snowfall,cloud_cover,pressure_msl,surface_pressure&timezone=auto&past_days=0&forecast_days=14&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch`,
+        { signal }
+      )
+        .then((response) => response.json())
+        .then((data: WeatherResponse) => {
+          setWeatherData(data);
+          setMinTemp(Math.min(...(data.daily.temperature_2m_min ?? [0])));
+          setMaxTemp(
+            Math.max(...(data.daily.temperature_2m_max ?? [100])) ?? 100
+          );
+          setMaxLowWidth(
+            Math.max(
+              ...(data.daily.temperature_2m_min.map((t) => {
+                return Math.round(t).toString().length;
+              }) ?? [2])
+            )
+          );
+          setMaxHighWidth(
+            Math.max(
+              ...(data.daily.temperature_2m_max.map((t) => {
+                return Math.round(t).toString().length;
+              }) ?? [2])
+            )
+          );
+          setLastRefresh(new Date());
+        })
+        .catch((err) => {
+          if (err?.name === "AbortError") return;
+          if (signal) {
+            console.error("Weather fetch error:", err);
+          } else {
+            setLocError(err.message || String(err));
+          }
+        });
+
+      fetch(
+        `https://api.weather.gov/alerts/active?point=${coords.lat},${coords.lon}`,
+        {
+          headers: {
+            "User-Agent": "(hiems, pythonatsea@duck.com)",
+          },
+          signal,
+        }
+      )
+        .then((res) => res.json())
+        .then((data: AlertsResponse) => {
+          setAlertsData(data);
+        })
+        .catch((err) => {
+          if (err?.name === "AbortError") return;
+          console.error("Alerts fetch error:", err);
+        });
+    },
+    [coords]
+  );
 
   useLayoutEffect(() => {
     const supported =
@@ -72,39 +141,9 @@ export default function Home() {
   useEffect(() => {
     if (!coords) return;
     const controller = new AbortController();
-    const { signal } = controller;
-    fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant,wind_gusts_10m_max,daylight_duration,sunshine_duration,uv_index_max,uv_index_clear_sky_max,showers_sum,snowfall_sum,rain_sum,precipitation_sum,precipitation_hours,precipitation_probability_max&hourly=temperature_2m,weather_code,apparent_temperature,relative_humidity_2m,dew_point_2m,pressure_msl,cloud_cover,visibility,precipitation,precipitation_probability,rain,showers,snowfall,snow_depth,wind_speed_10m,wind_gusts_10m,surface_pressure&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,rain,showers,snowfall,cloud_cover,pressure_msl,surface_pressure&timezone=auto&past_days=0&forecast_days=14&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch`,
-      { signal }
-    )
-      .then((response) => response.json())
-      .then((data: WeatherResponse) => {
-        setWeatherData(data);
-        setMinTemp(Math.min(...(data.daily.temperature_2m_min ?? [0])));
-        setMaxTemp(
-          Math.max(...(data.daily.temperature_2m_max ?? [100])) ?? 100
-        );
-        setMaxLowWidth(
-          Math.max(
-            ...(data.daily.temperature_2m_min.map((t) => {
-              return Math.round(t).toString().length;
-            }) ?? [2])
-          )
-        );
-        setMaxHighWidth(
-          Math.max(
-            ...(data.daily.temperature_2m_max.map((t) => {
-              return Math.round(t).toString().length;
-            }) ?? [2])
-          )
-        );
-      })
-      .catch((err) => {
-        if (err?.name === "AbortError") return;
-        setLocError(err.message || String(err));
-      });
+    refreshData(controller.signal);
     return () => controller.abort();
-  }, [coords]);
+  }, [coords, refreshData]);
 
   useEffect(() => {
     if (!weatherData) return;
@@ -114,7 +153,10 @@ export default function Home() {
     fetch("/api/summary/conditions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(weatherData),
+      body: JSON.stringify({
+        weatherData,
+        previousPrompt: conditionsSummary || undefined,
+      }),
       signal,
     })
       .then((res) => res.json())
@@ -130,26 +172,15 @@ export default function Home() {
       });
 
     return () => controller.abort();
-  }, [weatherData]);
+  }, [conditionsSummary, weatherData]);
 
   useEffect(() => {
-    if (!coords) return;
-    fetch(
-      `https://api.weather.gov/alerts/active?point=${coords.lat},${coords.lon}`,
-      {
-        headers: {
-          "User-Agent": "(hiems, pythonatsea@duck.com)",
-        },
-      }
-    )
-      .then((res) => res.json())
-      .then((data: AlertsResponse) => {
-        setAlertsData(data);
-      })
-      .catch((err) => {
-        console.error("Error fetching alerts:", err);
-      });
-  }, [coords]);
+    if (!coords || autoRefreshInterval <= 0) return;
+
+    const intervalId = setInterval(() => refreshData(), autoRefreshInterval);
+
+    return () => clearInterval(intervalId);
+  }, [coords, autoRefreshInterval, refreshData]);
 
   return (
     <div className="flex flex-col items-center min-h-screen">
@@ -980,6 +1011,29 @@ export default function Home() {
               </div>
             </div>
           </div>
+          {lastRefresh && (
+            <div className="w-full px-6 pb-4">
+              <p className="text-xs text-muted-foreground italic">
+                Last refreshed at{" "}
+                {lastRefresh.toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  hour12: true,
+                })}{" "}
+                (
+                <button
+                  className="text-blue-500 hover:underline"
+                  onClick={() => {
+                    refreshData();
+                  }}
+                >
+                  refresh
+                </button>
+                ing every {autoRefreshInterval / 1000} seconds)
+              </p>
+            </div>
+          )}
         </>
       )}
     </div>
