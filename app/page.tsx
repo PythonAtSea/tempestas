@@ -235,7 +235,7 @@ export default function Home() {
       {weatherData && (
         <>
           <div className="p-6 w-full pb-0">
-            <p className="text-sm border border-b-0 p-4">
+            <p className="text-sm border border-b-0 p-4 bg-muted/20">
               {conditionsSummary ? (
                 <span>{conditionsSummary}</span>
               ) : (
@@ -256,14 +256,35 @@ export default function Home() {
                   const scrollLeft = e.currentTarget.scrollLeft;
                   setShowScrollReset(scrollLeft > 50);
                 }}
-                className="w-full border overflow-x-auto overflow-y-hidden"
+                className="w-full border overflow-x-auto overflow-y-hidden bg-muted/20"
               >
                 <div className="flex w-max gap-4 px-4 py-4">
+                  <div className="shrink-0 flex flex-col items-center gap-2">
+                    <div className="relative pb-3">
+                      <span className="text-sm text-muted-foreground block text-center mt-1.5 -mb-1.5 font-bold">
+                        Now
+                      </span>
+                    </div>
+                    <i
+                      className={`wi wi-fw scale-125 ${
+                        getWeatherCodeDescription(
+                          weatherData?.current.weather_code ?? -1,
+                          weatherData?.current.is_day === 1
+                        ).iconClass
+                      } py-2`}
+                    />
+                    <span className="font-mono font-bold relative">
+                      {Math.round(weatherData?.current.temperature_2m ?? 0)
+                        .toString()
+                        .padStart(2, "\u00A0")}
+                      <span className="absolute top-0 left-full">º</span>
+                    </span>
+                  </div>
                   {weatherData?.hourly.time
                     .filter((time) => {
                       const date = new Date(time);
                       const now = new Date();
-                      return date.getTime() > now.getTime() - 60 * 60 * 1000;
+                      return date.getTime() > now.getTime();
                     })
                     .map((time, i) => (
                       <div
@@ -329,7 +350,7 @@ export default function Home() {
             </div>
           </div>
           <div className="w-full px-6 pb-6">
-            <div className="border">
+            <div className="border bg-muted/20">
               <p className="p-2 font-bold text-muted-foreground flex flex-row items-center gap-2">
                 <Calendar className="inline-block size-4" />
                 14 day forecast
