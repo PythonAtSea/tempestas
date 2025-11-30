@@ -1,13 +1,15 @@
 "use client";
 
-import { Loader2, Navigation } from "lucide-react";
+import { Loader2, Navigation, MapPin, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 interface LocationHeaderProps {
   coords: { lat: number; lon: number } | null;
   locError: string | null;
   locationName: string | null;
   geolocationSupported: boolean | null;
+  isCurrentLocation?: boolean;
 }
 
 export default function LocationHeader({
@@ -15,14 +17,25 @@ export default function LocationHeader({
   locError,
   locationName,
   geolocationSupported,
+  isCurrentLocation = true,
 }: LocationHeaderProps) {
   return (
-    <>
-      <div className="mt-10">
+    <Link
+      href="/location"
+      className="flex flex-col items-center mt-10 hover:opacity-80 transition-opacity cursor-pointer group"
+    >
+      <div>
         {coords && (
           <div className="flex flex-row items-center gap-1 mt-1 text-xs text-muted-foreground">
-            <Navigation className="inline-block size-3" />
-            <p>Current Location</p>
+            {isCurrentLocation ? (
+              <Navigation className="inline-block size-3" />
+            ) : (
+              <MapPin className="inline-block size-3" />
+            )}
+            <p>
+              {isCurrentLocation ? "Current Location" : "Selected Location"}
+            </p>
+            <ChevronRight className="inline-block size-3" />
           </div>
         )}
         {geolocationSupported === null && (
@@ -51,6 +64,6 @@ export default function LocationHeader({
       ) : (
         <Skeleton className="h-4 w-20" />
       )}
-    </>
+    </Link>
   );
 }

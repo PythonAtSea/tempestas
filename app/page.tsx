@@ -10,6 +10,13 @@ import DailyForecast from "./components/daily-forecast";
 import WeatherWidgets from "./components/weather-widgets";
 import LastRefresh from "./components/last-refresh";
 
+interface StoredLocation {
+  lat?: number;
+  lon?: number;
+  name?: string;
+  isCurrentLocation: boolean;
+}
+
 export default function Home() {
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(
     null
@@ -19,6 +26,7 @@ export default function Home() {
   const [geolocationSupported, setGeolocationSupported] = useState<
     boolean | null
   >(null);
+  const [isCurrentLocation, setIsCurrentLocation] = useState<boolean>(true);
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null);
   const [maxLowWidth, setMaxLowWidth] = useState(2);
   const [maxHighWidth, setMaxHighWidth] = useState(2);
@@ -104,24 +112,59 @@ export default function Home() {
   );
 
   useLayoutEffect(() => {
+    const storedLocationStr = localStorage.getItem("selectedLocation");
+    if (storedLocationStr) {
+      try {
+        const storedLocation: StoredLocation = JSON.parse(storedLocationStr);
+        if (
+          !storedLocation.isCurrentLocation &&
+          storedLocation.lat &&
+          storedLocation.lon
+        ) {
+          /* eslint-disable react-hooks/set-state-in-effect */
+          setCoords({ lat: storedLocation.lat, lon: storedLocation.lon });
+          if (storedLocation.name) {
+            setLocationName(storedLocation.name);
+          }
+          setIsCurrentLocation(false);
+          setGeolocationSupported(true);
+          /* eslint-enable react-hooks/set-state-in-effect */
+          return;
+        }
+      } catch {
+        localStorage.removeItem("selectedLocation");
+      }
+    }
+
+    const DEFAULT_LAT = 44.3898;
+    const DEFAULT_LON = -73.2312;
+
+    const fallbackToDefaultLocation = () => {
+      setCoords({ lat: DEFAULT_LAT, lon: DEFAULT_LON });
+      setIsCurrentLocation(false);
+    };
+
     const supported =
       typeof navigator !== "undefined" && !!navigator.geolocation;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGeolocationSupported(supported);
-    if (!supported) return;
+    setIsCurrentLocation(true);
+    if (!supported) {
+      fallbackToDefaultLocation();
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
       },
-      (err) => {
-        setLocError(err.message);
+      () => {
+        fallbackToDefaultLocation();
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   }, []);
 
   useEffect(() => {
-    if (!coords) return;
+    if (!coords || (locationName && !isCurrentLocation)) return;
     const controller = new AbortController();
     const { signal } = controller;
     fetch(
@@ -143,7 +186,7 @@ export default function Home() {
         setLocError(err.message || String(err));
       });
     return () => controller.abort();
-  }, [coords]);
+  }, [coords, locationName, isCurrentLocation]);
 
   useEffect(() => {
     if (!coords) return;
@@ -196,6 +239,7 @@ export default function Home() {
         locError={locError}
         locationName={locationName}
         geolocationSupported={geolocationSupported}
+        isCurrentLocation={isCurrentLocation}
       />
       <CurrentWeather weatherData={weatherData} />
       <WeatherAlerts alertsData={alertsData} />
