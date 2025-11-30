@@ -36,7 +36,7 @@ export default function Widget({ weatherData }: HumidityWidgetProps) {
       <Slider
         className="mt-auto mb-2"
         dotPercent={weatherData.current.relative_humidity_2m}
-        gradient="linear-gradient(to right, #e67a00 0%, #f5d66a 20%, #8bd67a 50% #4da6ff 75%, #0057c8 100%)"
+        gradient="linear-gradient(to right, #e67a00 0%, #f5d66a 20%, #8bd67a 50%, #4da6ff 75%, #0057c8 100%)"
         start={0}
         end={100}
       />
