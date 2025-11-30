@@ -14,9 +14,9 @@ export default function WeatherWidgets({ weatherData }: WeatherWidgetsProps) {
   return (
     <div className="w-full px-6 pb-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <WindWidget weatherData={weatherData} />
         <FeelsLikeWidget weatherData={weatherData} />
         <UVIndexWidget weatherData={weatherData} />
-        <WindWidget weatherData={weatherData} />
         <SunWidget weatherData={weatherData} />
       </div>
     </div>

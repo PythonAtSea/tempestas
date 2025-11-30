@@ -21,7 +21,7 @@ export default function DailyForecast({
   maxHighWidth,
 }: DailyForecastProps) {
   return (
-    <div className="w-full px-6 pb-6">
+    <div className="w-full px-6 pb-4">
       <div className="border bg-muted/20">
         <p className="p-2 font-bold text-muted-foreground flex flex-row items-center gap-2">
           <Calendar className="inline-block size-4" />
