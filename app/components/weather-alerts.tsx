@@ -41,6 +41,8 @@ function useIsFinePointer() {
   return isFine;
 }
 
+const DEMO_ALERT = false;
+
 export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
   const isFinePointer = useIsFinePointer();
 
@@ -84,7 +86,11 @@ export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
     type: "FeatureCollection",
   };
 
-  const effectiveAlerts = alertsData?.features?.length ? alertsData : fakeAlert;
+  const effectiveAlerts = alertsData?.features?.length
+    ? alertsData
+    : DEMO_ALERT
+    ? fakeAlert
+    : null;
 
   if (!effectiveAlerts || !effectiveAlerts.features) return null;
 
