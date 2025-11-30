@@ -5,6 +5,7 @@ import FeelsLikeWidget from "./widgets/feels-like-widget";
 import UVIndexWidget from "./widgets/uv-index-widget";
 import WindWidget from "./widgets/wind-widget";
 import SunWidget from "./widgets/sun-widget";
+import HumidityWidget from "./widgets/humidity-widget";
 
 interface WeatherWidgetsProps {
   weatherData: WeatherResponse;
@@ -18,6 +19,7 @@ export default function WeatherWidgets({ weatherData }: WeatherWidgetsProps) {
         <FeelsLikeWidget weatherData={weatherData} />
         <UVIndexWidget weatherData={weatherData} />
         <SunWidget weatherData={weatherData} />
+        <HumidityWidget weatherData={weatherData} />
       </div>
     </div>
   );
