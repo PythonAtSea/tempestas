@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation, MapPin, Loader2, ArrowLeft, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface AddressCandidate {
   address: string;
@@ -183,109 +184,128 @@ export default function LocationPage() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        {!searchQuery && (
-          <div className="p-4 border-b border-border">
-            <p className="text-xs text-muted-foreground uppercase font-bold mb-3">
-              Current Location
+        <div className="p-4 border-b border-border">
+          <p className="text-xs text-muted-foreground uppercase font-bold mb-3">
+            Current Location
+          </p>
+
+          {geolocationSupported === false && (
+            <p className="text-sm text-red-500">
+              Geolocation is not supported by your browser
             </p>
+          )}
 
-            {geolocationSupported === false && (
-              <p className="text-sm text-red-500">
-                Geolocation is not supported by your browser
+          {locationError && (
+            <div className="flex  flex-col items-start justify-start">
+              <p className="text-sm">
+                You&apos;ve disabled location services for this site, you need
+                to enable them in your browser settings (if you want to use your
+                current location)
               </p>
-            )}
-
-            {locationError && (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-red-500">{locationError}</p>
-                <button
-                  onClick={getCurrentLocation}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {geolocationSupported && !locationError && (
-              <button
-                onClick={selectCurrentLocation}
-                disabled={isLoadingCurrentLocation}
-                className="w-full flex items-center gap-3 p-3 -mx-3 hover:bg-accent rounded-lg transition-colors text-left"
+              <Button
+                onClick={getCurrentLocation}
+                className="mt-4 w-full"
+                variant="secondary"
               >
-                <div className="p-2">
-                  <Navigation className="size-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium">Use Current Location</p>
-                  {isLoadingCurrentLocation ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="size-3 animate-spin" />
-                      <span>Getting location...</span>
-                    </div>
-                  ) : currentLocation ? (
-                    <p className="text-sm text-muted-foreground truncate">
-                      {currentLocation.name}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Tap to detect your location
-                    </p>
-                  )}
-                </div>
-              </button>
-            )}
-          </div>
-        )}
+                Retry
+              </Button>
+            </div>
+          )}
 
-        {searchQuery && (
-          <div className="p-4">
-            {isSearching ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          {geolocationSupported && !locationError && (
+            <button
+              onClick={selectCurrentLocation}
+              disabled={isLoadingCurrentLocation}
+              className="w-full flex items-center gap-3 p-3 -mx-3 hover:bg-accent rounded-lg transition-colors text-left"
+            >
+              <div className="p-2">
+                <Navigation className="size-5 text-white" />
               </div>
-            ) : searchResults.length > 0 ? (
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground uppercase font-bold mb-3">
-                  Search Results
-                </p>
-                {searchResults.map((result, index) => (
-                  <button
-                    key={`${result.location.x}-${result.location.y}-${index}`}
-                    onClick={() =>
-                      selectLocation(
-                        result.location.y,
-                        result.location.x,
-                        result.address
-                      )
-                    }
-                    className="w-full flex items-center gap-3 p-3 -mx-3 hover:bg-accent rounded-lg transition-colors text-left"
-                  >
-                    <div className="p-2">
-                      <MapPin className="size-5 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{result.address}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {result.attributes.City && result.attributes.Region
-                          ? `${result.attributes.City}, ${result.attributes.Region}`
-                          : result.attributes.Country || ""}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium">Use Current Location</p>
+                {isLoadingCurrentLocation ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="size-3 animate-spin" />
+                    <span>Getting location...</span>
+                  </div>
+                ) : currentLocation ? (
+                  <p className="text-sm text-muted-foreground truncate">
+                    {currentLocation.name}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Tap to detect your location
+                  </p>
+                )}
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <MapPin className="size-12 mx-auto text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">No locations found</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Try a different search term
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+            </button>
+          )}
+        </div>
+
+        <div className="p-4">
+          {isSearching ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : searchResults.length > 0 && searchQuery ? (
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase font-bold mb-3">
+                Search Results
+              </p>
+              {searchResults.map((result, index) => (
+                <button
+                  key={`${result.location.x}-${result.location.y}-${index}`}
+                  onClick={() =>
+                    selectLocation(
+                      result.location.y,
+                      result.location.x,
+                      result.address
+                    )
+                  }
+                  className="w-full flex items-center gap-3 p-3 -mx-3 hover:bg-accent rounded-lg transition-colors text-left"
+                >
+                  <div className="p-2">
+                    <MapPin className="size-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{result.address}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {result.attributes.City && result.attributes.Region
+                        ? `${result.attributes.City}, ${result.attributes.Region}`
+                        : result.attributes.Country || ""}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <MapPin className="size-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground">
+                {searchQuery
+                  ? "No locations found"
+                  : "You haven't typed anything!"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {searchQuery ? (
+                  <span>Try a different search term</span>
+                ) : (
+                  <span>
+                    Try searching for something, like{" "}
+                    <button
+                      className="text-blue-500 hover:underline"
+                      onClick={() => {
+                        setSearchQuery("Shelburne, VT");
+                      }}
+                    >
+                      Shelburne, VT
+                    </button>
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

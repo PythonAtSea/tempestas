@@ -30,7 +30,7 @@ export default function Widget({ weatherData }: HumidityWidgetProps) {
           const alpha = (a * T_C) / (b + T_C) + Math.log(RH / 100);
           const dewPointC = (b * alpha) / (a - alpha);
           const dewPointF = (dewPointC * 9) / 5 + 32;
-          return `Dew point ${Math.round(dewPointF)}°F`;
+          return `Dew point ${Math.round(dewPointF)}°`;
         })()}
       </p>
       <Slider
