@@ -4,7 +4,12 @@
 
 Hiems is a mobile first weather site. >95% of the development was done using chrome devtools to simulate a mobile device. It _works_ on desktop, but it's primarily for mobile users. It's design was inspired by apple weather.
 
-![alt text](cover.png)
+![screenshot](cover.png)
+
+## People from siege!
+
+If you can, try this on your phone, it works better!
+![qr code](image.png)
 
 ## Running locally
 
@@ -12,7 +17,7 @@ Clone this, run `npm install`, `npm run dev`, go to [http://localhost:3000](http
 
 ## [OPTIONAL] AI creds
 
-You can optionally populate the `.env` file as follows if you want the AI powered summary. You can use any OpenAI compliant provider, but the hosted version uses [Hack Club AI](https://ai.hackclub.com/), a free AI provider.
+You can optionally populate the `.env` file as follows if you want the AI powered summary (if you don't just leave it blank). You can use any OpenAI compliant provider, but the hosted version uses [Hack Club AI](https://ai.hackclub.com/), a free AI provider.
 
 > [!IMPORTANT]
 > Hack Club AI is only for verified high schoolers, sorry!
