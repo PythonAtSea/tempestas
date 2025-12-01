@@ -9,6 +9,7 @@ import HourlyForecast from "./components/hourly-forecast";
 import DailyForecast from "./components/daily-forecast";
 import WeatherWidgets from "./components/weather-widgets";
 import LastRefresh from "./components/last-refresh";
+import { Heart } from "lucide-react";
 
 interface StoredLocation {
   lat?: number;
@@ -264,6 +265,40 @@ export default function Home() {
           )}
         </>
       )}
+      <p className="self-start ml-6 my-2 text-xs text-muted-foreground">
+        Weather data from{" "}
+        <a
+          href="https://open-meteo.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          Open-Meteo
+        </a>
+      </p>
+      <p className="self-start ml-6 mb-2 text-xs text-muted-foreground">
+        Geocoding provided by{" "}
+        <a
+          href="https://geocode.arcgis.com/arcgis/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          ArcGIS
+        </a>
+      </p>
+      <p className="self-start ml-6 mb-6">
+        Made with{" "}
+        <Heart className="inline size-4 text-red-700 animate-pulse mx-1" /> by{" "}
+        <a
+          href="https://github.com/pythonatsea"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          pythonatsea
+        </a>
+      </p>
     </div>
   );
 }
