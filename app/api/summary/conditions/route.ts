@@ -4,8 +4,8 @@ import { WeatherResponse } from "@/lib/types/weather";
 import { formatWeatherForLLM } from "@/lib/format-weather-for-llm";
 
 const client = new OpenAI({
-  apiKey: process.env.AI_API_KEY,
-  baseURL: process.env.AI_API_BASE_URL,
+  apiKey: process.env.AI_API_KEY || "",
+  baseURL: process.env.AI_API_BASE_URL || "https://ai.hackclub.com/proxy/v1",
 });
 
 export async function POST(request: NextRequest) {
