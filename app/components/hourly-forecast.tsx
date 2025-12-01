@@ -63,7 +63,7 @@ export default function HourlyForecast({ weatherData }: HourlyForecastProps) {
             const scrollLeft = e.currentTarget.scrollLeft;
             setShowScrollReset(scrollLeft > 50);
           }}
-          className="w-full border overflow-x-auto overflow-y-hidden bg-muted/20"
+          className="w-full border overflow-x-auto overflow-y-hidden bg-muted/20 pointer-fine:[scrollbar-width:auto] pointer-fine:[&::-webkit-scrollbar]:block pointer-fine:[&::-webkit-scrollbar]:h-2.5 pointer-fine:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 pointer-fine:[&::-webkit-scrollbar-track]:bg-transparent"
         >
           <div className="flex w-max gap-4 px-4 py-4">
             <div className="shrink-0 flex flex-col items-center gap-2">
