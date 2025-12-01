@@ -6,7 +6,7 @@ import UVIndexWidget from "./widgets/uv-index-widget";
 import WindWidget from "./widgets/wind-widget";
 import SunWidget from "./widgets/sun-widget";
 import HumidityWidget from "./widgets/humidity-widget";
-
+import CloudCoverWidget from "./widgets/cloud-cover-widget";
 interface WeatherWidgetsProps {
   weatherData: WeatherResponse;
 }
@@ -20,6 +20,7 @@ export default function WeatherWidgets({ weatherData }: WeatherWidgetsProps) {
         <UVIndexWidget weatherData={weatherData} />
         <SunWidget weatherData={weatherData} />
         <HumidityWidget weatherData={weatherData} />
+        <CloudCoverWidget weatherData={weatherData} />
       </div>
     </div>
   );
