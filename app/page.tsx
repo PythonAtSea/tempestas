@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useLayoutEffect, useState, useCallback } from "react";
-import { AlertsResponse, WeatherResponse } from "@/lib/types/weather";
+import {
+  AirQualityResponse,
+  AlertsResponse,
+  WeatherResponse,
+} from "@/lib/types/weather";
 import LocationHeader from "./components/location-header";
 import CurrentWeather from "./components/current-weather";
 import WeatherAlerts from "./components/weather-alerts";
@@ -35,6 +39,8 @@ export default function Home() {
   const [maxTemp, setMaxTemp] = useState(100);
   const [conditionsSummary, setConditionsSummary] = useState<string>("");
   const [alertsData, setAlertsData] = useState<AlertsResponse | null>(null);
+  const [airQualityData, setAirQualityData] =
+    useState<AirQualityResponse | null>(null);
   const [autoRefreshInterval] = useState<number>(60000);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
@@ -107,6 +113,19 @@ export default function Home() {
         .catch((err) => {
           if (err?.name === "AbortError") return;
           console.error("Alerts fetch error:", err);
+        });
+
+      fetch(
+        `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${coords.lat}&longitude=${coords.lon}&hourly=us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_nitrogen_dioxide,us_aqi_carbon_monoxide,us_aqi_ozone,us_aqi_sulphur_dioxide&forecast_days=1`,
+        { signal }
+      )
+        .then((res) => res.json())
+        .then((data: AirQualityResponse) => {
+          setAirQualityData(data);
+        })
+        .catch((err) => {
+          if (err?.name === "AbortError") return;
+          console.error("Air quality fetch error:", err);
         });
     },
     [coords]
@@ -255,7 +274,10 @@ export default function Home() {
             maxLowWidth={maxLowWidth}
             maxHighWidth={maxHighWidth}
           />
-          <WeatherWidgets weatherData={weatherData} />
+          <WeatherWidgets
+            weatherData={weatherData}
+            airQualityData={airQualityData}
+          />
           {lastRefresh && (
             <LastRefresh
               lastRefresh={lastRefresh}

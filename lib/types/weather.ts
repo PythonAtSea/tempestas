@@ -210,3 +210,39 @@ export interface AlertReference {
   identifier: string;
   sender: string;
 }
+
+// Air Quality API Response
+
+export interface AirQualityResponse {
+  latitude: number;
+  longitude: number;
+  generationtime_ms: number;
+  utc_offset_seconds: number;
+  timezone: string;
+  timezone_abbreviation: string;
+  elevation: number;
+  hourly_units: AirQualityHourlyUnits;
+  hourly: AirQualityHourlyData;
+}
+
+export interface AirQualityHourlyUnits {
+  time: "iso8601" | string;
+  us_aqi: "USAQI" | string;
+  us_aqi_pm2_5: "USAQI" | string;
+  us_aqi_pm10: "USAQI" | string;
+  us_aqi_nitrogen_dioxide: "USAQI" | string;
+  us_aqi_carbon_monoxide: "USAQI" | string;
+  us_aqi_ozone: "USAQI" | string;
+  us_aqi_sulphur_dioxide: "USAQI" | string;
+}
+
+export interface AirQualityHourlyData {
+  time: string[];
+  us_aqi: (number | null)[];
+  us_aqi_pm2_5: (number | null)[];
+  us_aqi_pm10: (number | null)[];
+  us_aqi_nitrogen_dioxide: (number | null)[];
+  us_aqi_carbon_monoxide: (number | null)[];
+  us_aqi_ozone: (number | null)[];
+  us_aqi_sulphur_dioxide: (number | null)[];
+}
