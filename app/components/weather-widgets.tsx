@@ -22,10 +22,10 @@ export default function WeatherWidgets({
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         <WindWidget weatherData={weatherData} />
         <FeelsLikeWidget weatherData={weatherData} />
-        <UVIndexWidget weatherData={weatherData} />
         <SunWidget weatherData={weatherData} />
-        <HumidityWidget weatherData={weatherData} />
+        <UVIndexWidget weatherData={weatherData} />
         <CloudCoverWidget weatherData={weatherData} />
+        <HumidityWidget weatherData={weatherData} />
         <AirQualityWidget airQualityData={airQualityData} />
       </div>
     </div>

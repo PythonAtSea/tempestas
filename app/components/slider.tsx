@@ -26,7 +26,7 @@ export default function Slider({
   pillTextColor = "#000000",
 }: SliderProps) {
   const defaultGradient =
-    "linear-gradient(to right, #00a000 0%, #ffff00 33%, #ff0000 66%, #800080 100%)";
+    "linear-gradient(to right, #00a000 0%, #00a000 5%, #ffff00 33%, #ff0000 66%, #800080 95%, #800080 100%)";
   const bg = gradient ?? defaultGradient;
   const left = Math.max(0, Math.min(100, Math.min(start, end)));
   const right = Math.max(0, Math.min(100, Math.max(start, end)));
@@ -43,8 +43,6 @@ export default function Slider({
   const getPillBgColor = () => {
     if (pill === undefined) return pillBgColor;
 
-    // Parse colors and stops from the gradient string (bg)
-    // Expected format: linear-gradient(..., color stop%, color stop%, ...)
     const matches = [...bg.matchAll(/(#[0-9a-fA-F]{3,6})\s*(\d{1,3})%/g)];
 
     if (matches.length < 2) return pillBgColor;
