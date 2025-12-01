@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const formattedWeather = formatWeatherForLLM(weatherData);
 
     const response = await client.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: process.env.AI_MODEL || "openai/gpt-oss-120b",
       messages: [
         {
           role: "system",

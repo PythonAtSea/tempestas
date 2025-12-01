@@ -216,7 +216,7 @@ export default function Home() {
   }, [coords, refreshData]);
 
   useEffect(() => {
-    if (!weatherData) return;
+    if (!weatherData || process.env.NEXT_PUBLIC_USE_AI !== "true") return;
     const controller = new AbortController();
     const { signal } = controller;
 

@@ -9,7 +9,8 @@ interface ConditionsSummaryProps {
 export default function ConditionsSummary({
   conditionsSummary,
 }: ConditionsSummaryProps) {
-  if (conditionsSummary === "DND") return null;
+  if (conditionsSummary === "DND" || process.env.NEXT_PUBLIC_USE_AI !== "true")
+    return <div className="h-6"></div>;
 
   return (
     <div className="p-6 w-full pb-0">
