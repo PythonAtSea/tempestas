@@ -41,7 +41,7 @@ function useIsFinePointer() {
   return isFine;
 }
 
-const DEMO_ALERT = false;
+const DEMO_ALERT = true;
 
 export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
   const isFinePointer = useIsFinePointer();
@@ -50,13 +50,13 @@ export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
     features: [
       {
         properties: {
-          event: "Winter Storm Warning",
+          event: "[DEMO] Winter Storm Warning",
           headline:
-            "Winter Storm Warning issued November 30 at 10:00AM EST until December 1 at 6:00PM EST",
+            "[DEMO] Winter Storm Warning issued November 30 at 10:00AM EST until December 1 at 6:00PM EST",
           description:
-            "A significant winter storm is expected to impact the region. Heavy snow accumulations of 8 to 12 inches are expected.\n\nTravel could be very difficult to impossible. The hazardous conditions could impact the morning or evening commute.\n\nWinds gusting as high as 45 mph will cause blowing and drifting snow, significantly reducing visibility at times.",
+            "[DEMO] A significant winter storm is expected to impact the region. Heavy snow accumulations of 8 to 12 inches are expected.\n\nTravel could be very difficult to impossible. The hazardous conditions could impact the morning or evening commute.\n\nWinds gusting as high as 45 mph will cause blowing and drifting snow, significantly reducing visibility at times.",
           instruction:
-            "Travel should be restricted to emergencies only. If you must travel, keep an extra flashlight, food, and water in your vehicle in case of an emergency.",
+            "[DEMO] Travel should be restricted to emergencies only. If you must travel, keep an extra flashlight, food, and water in your vehicle in case of an emergency.",
           severity: "Severe",
           certainty: "Likely",
           urgency: "Immediate",
