@@ -1,6 +1,7 @@
 "use client";
 
 import { WeatherResponse } from "@/lib/types/weather";
+import GenericSliderWidget from "./generic-slider-widget";
 
 interface SunWidgetProps {
   weatherData: WeatherResponse;
@@ -20,19 +21,24 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
   const minutes = eventTime.getMinutes();
   const totalMinutes = hours * 60 + minutes;
   const xPos = (totalMinutes / (24 * 60)) * 100;
-  const yPos = waveCenterY + waveAmplitude * Math.cos((xPos / 100) * 2 * Math.PI);
+  const yPos =
+    waveCenterY + waveAmplitude * Math.cos((xPos / 100) * 2 * Math.PI);
 
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const nowXPos = (nowMinutes / (24 * 60)) * 100;
-  const nowYPos = waveCenterY + waveAmplitude * Math.cos((nowXPos / 100) * 2 * Math.PI);
+  const nowYPos =
+    waveCenterY + waveAmplitude * Math.cos((nowXPos / 100) * 2 * Math.PI);
 
   const wavePath = (() => {
     const points: string[] = [];
     const steps = 200;
     for (let i = 0; i <= steps; i++) {
       const x = (i / steps) * 100;
-      const y = padding + waveCenterY + waveAmplitude * Math.cos((i / steps) * 2 * Math.PI);
+      const y =
+        padding +
+        waveCenterY +
+        waveAmplitude * Math.cos((i / steps) * 2 * Math.PI);
       points.push(`${i === 0 ? "M" : "L"}${x},${y}`);
     }
     return points.join(" ");
@@ -43,11 +49,10 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
   const totalSvgHeight = svgHeight + padding * 2;
 
   return (
-    <div className="aspect-square border bg-muted/20 p-3 flex flex-col overflow-hidden relative">
-      <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
-        <i className={`wi wi-fw ${isDay ? "wi-sunset" : "wi-sunrise"}`} />
-        {isDay ? "Sunset" : "Sunrise"}
-      </p>
+    <GenericSliderWidget
+      icon={isDay ? "wi-sunset" : "wi-sunrise"}
+      title={isDay ? "Sunset" : "Sunrise"}
+    >
       <h3 className="font-bold font-mono text-3xl relative mt-2">
         {eventTime
           .toLocaleTimeString(undefined, {
@@ -164,6 +169,6 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
           }}
         />
       </div>
-    </div>
+    </GenericSliderWidget>
   );
 }

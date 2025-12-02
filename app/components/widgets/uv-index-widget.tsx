@@ -1,6 +1,7 @@
 "use client";
 
 import { WeatherResponse } from "@/lib/types/weather";
+import GenericSliderWidget from "./generic-slider-widget";
 import Slider from "../slider";
 
 interface UVIndexWidgetProps {
@@ -19,11 +20,7 @@ export default function UVIndexWidget({ weatherData }: UVIndexWidgetProps) {
   };
 
   return (
-    <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
-      <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
-        <i className="wi wi-fw wi-day-sunny" />
-        UV Index
-      </p>
+    <GenericSliderWidget icon="wi-day-sunny" title="UV Index">
       <h3 className="font-bold font-mono text-3xl relative mt-2">{uvIndex}</h3>
       <p className="text-sm text-muted-foreground -mt-2 mb-2 font-bold">
         {getUVLabel(uvIndex)}
@@ -37,6 +34,6 @@ export default function UVIndexWidget({ weatherData }: UVIndexWidgetProps) {
         }
         className="mt-auto mb-2"
       />
-    </div>
+    </GenericSliderWidget>
   );
 }

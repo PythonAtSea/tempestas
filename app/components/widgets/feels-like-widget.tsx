@@ -1,7 +1,10 @@
 "use client";
 
+"use client";
+
 import { WeatherResponse } from "@/lib/types/weather";
 import { getColorForTemp } from "@/lib/get-color-for-temp";
+import GenericSliderWidget from "./generic-slider-widget";
 import Slider from "../slider";
 
 interface FeelsLikeWidgetProps {
@@ -9,111 +12,48 @@ interface FeelsLikeWidgetProps {
 }
 
 export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
+  const apparentTemp = weatherData.current.apparent_temperature;
+  const actualTemp = weatherData.current.temperature_2m;
+  const isColder = apparentTemp < actualTemp;
+
+  const sliderValue = isColder
+    ? 100 - ((actualTemp - apparentTemp) / 15) * 100
+    : ((apparentTemp - actualTemp) / 15) * 100;
+
+  const apparentColor = getColorForTemp(apparentTemp);
+  const actualColor = getColorForTemp(actualTemp);
+  const gradient = isColder
+    ? `linear-gradient(to right, ${apparentColor} 0%, ${actualColor} 100%)`
+    : `linear-gradient(to right, ${actualColor} 0%, ${apparentColor} 100%)`;
+
   return (
-    <div className="aspect-square border bg-muted/20 p-3 flex flex-col">
-      <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
-        <i className="wi wi-fw wi-thermometer" />
-        Feels like
-      </p>
+    <GenericSliderWidget icon="wi-thermometer" title="Feels like">
       <h3 className="font-bold font-mono text-3xl relative mt-2">
-        {Math.round(weatherData.current.apparent_temperature)}º
+        {Math.round(apparentTemp)}º
       </h3>
       <p className="text-sm text-muted-foreground -mt-2 mb-2 font-bold">
-        Actual: {Math.round(weatherData.current.temperature_2m)}º
+        Actual: {Math.round(actualTemp)}º
       </p>
       <Slider
-        start={Math.min(
-          weatherData.current.apparent_temperature <
-            weatherData.current.temperature_2m
-            ? 100
-            : 0,
-          weatherData.current.apparent_temperature <
-            weatherData.current.temperature_2m
-            ? 100 -
-                ((weatherData.current.temperature_2m -
-                  weatherData.current.apparent_temperature) /
-                  15) *
-                  100
-            : ((weatherData.current.apparent_temperature -
-                weatherData.current.temperature_2m) /
-                15) *
-                100
-        )}
-        end={Math.max(
-          weatherData.current.apparent_temperature <
-            weatherData.current.temperature_2m
-            ? 100
-            : 0,
-          weatherData.current.apparent_temperature <
-            weatherData.current.temperature_2m
-            ? 100 -
-                ((weatherData.current.temperature_2m -
-                  weatherData.current.apparent_temperature) /
-                  15) *
-                  100
-            : ((weatherData.current.apparent_temperature -
-                weatherData.current.temperature_2m) /
-                15) *
-                100
-        )}
-        dotPercent={
-          weatherData.current.apparent_temperature <
-          weatherData.current.temperature_2m
-            ? 100
-            : 0
-        }
-        pillPercent={
-          weatherData.current.apparent_temperature <
-          weatherData.current.temperature_2m
-            ? 100 -
-              ((weatherData.current.temperature_2m -
-                weatherData.current.apparent_temperature) /
-                15) *
-                100
-            : ((weatherData.current.apparent_temperature -
-                weatherData.current.temperature_2m) /
-                15) *
-              100
-        }
+        start={Math.min(isColder ? 100 : 0, sliderValue)}
+        end={Math.max(isColder ? 100 : 0, sliderValue)}
+        dotPercent={isColder ? 100 : 0}
+        pillPercent={sliderValue}
         pillText={
           <span className="flex items-center">
             <i
               className={`-ml-1 wi wi-fw wi-direction-${
-                weatherData.current.apparent_temperature <
-                weatherData.current.temperature_2m
-                  ? "down"
-                  : "up"
+                isColder ? "down" : "up"
               } scale-150`}
             />
             <span className="font-bold font-mono">
-              {Math.round(
-                Math.abs(
-                  weatherData.current.apparent_temperature -
-                    weatherData.current.temperature_2m
-                )
-              )}
-              º
+              {Math.round(Math.abs(apparentTemp - actualTemp))}º
             </span>
           </span>
         }
+        gradient={gradient}
         className="mt-auto mb-2"
-        gradient={(() => {
-          const apparentColor = getColorForTemp(
-            weatherData.current.apparent_temperature
-          );
-          const actualColor = getColorForTemp(
-            weatherData.current.temperature_2m
-          );
-          if (
-            weatherData.current.apparent_temperature <
-            weatherData.current.temperature_2m
-          ) {
-            return `linear-gradient(to right, ${apparentColor} 0%, ${actualColor} 100%)`;
-          } else {
-            return `linear-gradient(to right, ${actualColor} 0%, ${apparentColor} 100%)`;
-          }
-        })()}
       />
-    </div>
+    </GenericSliderWidget>
   );
 }
