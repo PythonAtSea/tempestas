@@ -52,6 +52,7 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
     <GenericSliderWidget
       icon={isDay ? "wi-sunset" : "wi-sunrise"}
       title={isDay ? "Sunset" : "Sunrise"}
+      className="overflow-hidden"
     >
       <h3 className="font-bold font-mono text-3xl relative mt-2">
         {eventTime

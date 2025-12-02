@@ -1,6 +1,5 @@
 "use client";
 
-"use client";
 
 import { WeatherResponse } from "@/lib/types/weather";
 import { getColorForTemp } from "@/lib/get-color-for-temp";
