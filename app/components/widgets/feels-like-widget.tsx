@@ -1,10 +1,13 @@
 "use client";
 
-
 import { WeatherResponse } from "@/lib/types/weather";
-import { getColorForTemp } from "@/lib/get-color-for-temp";
+import {
+  getColorForTemp,
+  DEFAULT_TEMP_COLOR_STOPS,
+} from "@/lib/get-color-for-temp";
 import GenericSliderWidget from "./generic-slider-widget";
 import Slider from "../slider";
+import { Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 
 interface FeelsLikeWidgetProps {
   weatherData: WeatherResponse;
@@ -25,8 +28,111 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
     ? `linear-gradient(to right, ${apparentColor} 0%, ${actualColor} 100%)`
     : `linear-gradient(to right, ${actualColor} 0%, ${apparentColor} 100%)`;
 
+  const chartData = weatherData.hourly.time
+    .filter((time) => {
+      const date = new Date(time);
+      const now = new Date();
+      return date.getDay() === now.getDay();
+    })
+    .map((time, index) => ({
+      time: new Date(time),
+      feelsLike: weatherData.hourly.apparent_temperature[index],
+      actual: weatherData.hourly.temperature_2m[index],
+    }));
+
+  // Calculate min/max temps for the gradient
+  const allFeelsLikeTemps = chartData.map((d) => d.feelsLike);
+  const minTemp = Math.min(...allFeelsLikeTemps);
+  const maxTemp = Math.max(...allFeelsLikeTemps);
+
+  // Build gradient stops based on temperature color stops
+  const sortedStops = [...DEFAULT_TEMP_COLOR_STOPS].sort(
+    (a, b) => b.temp - a.temp
+  ); // Sort high to low for vertical gradient (top = high temp)
+  const gradientStops = sortedStops
+    .filter((stop) => stop.temp >= minTemp - 10 && stop.temp <= maxTemp + 10)
+    .map((stop) => {
+      // Convert temp to percentage (0% = top = maxTemp, 100% = bottom = minTemp)
+      const percent = ((maxTemp - stop.temp) / (maxTemp - minTemp || 1)) * 100;
+      return {
+        offset: `${Math.max(0, Math.min(100, percent))}%`,
+        color: stop.color,
+      };
+    });
+
   return (
-    <GenericSliderWidget icon="wi-thermometer" title="Feels like">
+    <GenericSliderWidget
+      icon="wi-thermometer"
+      title="Feels like"
+      dialogContent={
+        <>
+          <LineChart
+            responsive
+            className="w-full aspect-square select-none pointer-events-none"
+            data={chartData}
+          >
+            <defs>
+              <linearGradient
+                id="feelsLikeGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                {gradientStops.map((stop, index) => (
+                  <stop
+                    key={index}
+                    offset={stop.offset}
+                    stopColor={stop.color}
+                  />
+                ))}
+              </linearGradient>
+            </defs>
+            <XAxis
+              dataKey="time"
+              tickFormatter={(time) => {
+                const date = new Date(time);
+                const hours = date.getHours();
+                const period = hours >= 12 ? "pm" : "am";
+                const displayHours = hours % 12 || 12;
+                return `${displayHours}${period}`;
+              }}
+              interval={6}
+            />
+            <YAxis
+              width="auto"
+              domain={["dataMin - 2", "dataMax + 2"]}
+              allowDecimals={false}
+              tickCount={10}
+            />
+            <ReferenceLine
+              x={new Date().setMinutes(0, 0, 0)}
+              stroke="currentColor"
+              strokeDasharray="3 3"
+              strokeOpacity={0.5}
+            />
+            <Line
+              type="monotone"
+              dataKey="feelsLike"
+              stroke="url(#feelsLikeGradient)"
+              strokeWidth={4}
+              dot={false}
+              isAnimationActive={false}
+              name="Feels Like"
+            />
+            <Line
+              type="monotone"
+              dataKey="actual"
+              strokeWidth={4}
+              stroke="#444"
+              dot={false}
+              isAnimationActive={false}
+              name="Actual"
+            />
+          </LineChart>
+        </>
+      }
+    >
       <h3 className="font-bold font-mono text-3xl relative mt-2">
         {Math.round(apparentTemp)}º
       </h3>

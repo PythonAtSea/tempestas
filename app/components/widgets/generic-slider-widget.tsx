@@ -4,7 +4,6 @@ import { useEffect, useState, ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -21,6 +20,7 @@ interface GenericSliderWidgetProps {
   icon: string;
   title: string;
   children: ReactNode;
+  dialogContent?: ReactNode;
 }
 
 function useIsFinePointer() {
@@ -45,11 +45,18 @@ export default function GenericSliderWidget({
   icon,
   title,
   children,
+  dialogContent,
 }: GenericSliderWidgetProps) {
   const isFinePointer = useIsFinePointer();
 
   const triggerCard = (
-    <div className="aspect-square border bg-muted/20 p-3 flex flex-col relative cursor-pointer hover:bg-muted/30 transition-colors">
+    <div
+      className={`aspect-square border bg-muted/20 p-3 flex flex-col relative ${
+        dialogContent
+          ? "cursor-pointer hover:bg-muted/30 transition-colors"
+          : ""
+      }`}
+    >
       <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
         <i className={`wi wi-fw ${icon}`} />
         {title}
@@ -58,7 +65,7 @@ export default function GenericSliderWidget({
     </div>
   );
 
-  if (isFinePointer) {
+  if (isFinePointer && dialogContent) {
     return (
       <Dialog>
         <DialogTrigger asChild>{triggerCard}</DialogTrigger>
@@ -66,27 +73,25 @@ export default function GenericSliderWidget({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
-          <DialogDescription className="max-h-[60vh] overflow-y-auto">
-            <p>Dummy content for {title}</p>
-            <p className="mt-4">Additional details would go here.</p>
-          </DialogDescription>
+          <div className="max-h-[60vh] overflow-y-auto">{dialogContent}</div>
         </DialogContent>
       </Dialog>
     );
+  } else if (dialogContent) {
+    return (
+      <Drawer>
+        <DrawerTrigger asChild>{triggerCard}</DrawerTrigger>
+        <DrawerContent className="select-none">
+          <DrawerHeader>
+            <DrawerTitle>{title}</DrawerTitle>
+          </DrawerHeader>
+          <div className="max-h-[80vh] overflow-y-auto px-6 pb-6">
+            {dialogContent}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  } else {
+    return triggerCard;
   }
-
-  return (
-    <Drawer>
-      <DrawerTrigger asChild>{triggerCard}</DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>{title}</DrawerTitle>
-        </DrawerHeader>
-        <div className="max-h-[80vh] overflow-y-auto px-6 pb-6">
-          <p>Dummy content for {title}</p>
-          <p className="mt-4">Additional details would go here.</p>
-        </div>
-      </DrawerContent>
-    </Drawer>
-  );
 }
