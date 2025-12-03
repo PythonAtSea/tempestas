@@ -14,8 +14,9 @@ interface FeelsLikeWidgetProps {
 }
 
 export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
-  const apparentTemp = weatherData.current.apparent_temperature;
   const actualTemp = weatherData.current.temperature_2m;
+  const apparentTemp = weatherData.current.apparent_temperature;
+
   const isColder = apparentTemp < actualTemp;
 
   const sliderValue = isColder
@@ -40,19 +41,16 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
       actual: weatherData.hourly.temperature_2m[index],
     }));
 
-  // Calculate min/max temps for the gradient
   const allFeelsLikeTemps = chartData.map((d) => d.feelsLike);
   const minTemp = Math.min(...allFeelsLikeTemps);
   const maxTemp = Math.max(...allFeelsLikeTemps);
 
-  // Build gradient stops based on temperature color stops
   const sortedStops = [...DEFAULT_TEMP_COLOR_STOPS].sort(
     (a, b) => b.temp - a.temp
-  ); // Sort high to low for vertical gradient (top = high temp)
+  );
   const gradientStops = sortedStops
     .filter((stop) => stop.temp >= minTemp - 10 && stop.temp <= maxTemp + 10)
     .map((stop) => {
-      // Convert temp to percentage (0% = top = maxTemp, 100% = bottom = minTemp)
       const percent = ((maxTemp - stop.temp) / (maxTemp - minTemp || 1)) * 100;
       return {
         offset: `${Math.max(0, Math.min(100, percent))}%`,

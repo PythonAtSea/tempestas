@@ -116,9 +116,9 @@ export default function Slider({
             left: `${pill}%`,
             backgroundColor: getPillBgColor(),
             color: pillTextColor,
-            transform: `translateY(-50%) translateX(${
-              width === 0 ? -50 : -((pill - left) / width) * 100
-            }%)`,
+            transform: `translateY(-50%) translateX(calc(-${pill}% + calc(${
+              pill - 50
+            } * 12px / 100)))`,
           }}
         >
           {pillText}
