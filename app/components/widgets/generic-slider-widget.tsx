@@ -15,6 +15,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface GenericSliderWidgetProps {
   icon: string;
@@ -70,10 +71,12 @@ export default function GenericSliderWidget({
       <Dialog>
         <DialogTrigger asChild>{triggerCard}</DialogTrigger>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{title}</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto">{dialogContent}</div>
+          <VisuallyHidden asChild>
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+            </DialogHeader>
+          </VisuallyHidden>
+          <div className="max-h-[70vh] overflow-y-auto">{dialogContent}</div>
         </DialogContent>
       </Dialog>
     );
@@ -82,9 +85,11 @@ export default function GenericSliderWidget({
       <Drawer>
         <DrawerTrigger asChild>{triggerCard}</DrawerTrigger>
         <DrawerContent className="select-none">
-          <DrawerHeader>
-            <DrawerTitle>{title}</DrawerTitle>
-          </DrawerHeader>
+          <VisuallyHidden asChild>
+            <DrawerHeader>
+              <DrawerTitle>{title}</DrawerTitle>
+            </DrawerHeader>
+          </VisuallyHidden>
           <div className="max-h-[80vh] overflow-y-auto px-6 pb-6">
             {dialogContent}
           </div>

@@ -64,6 +64,12 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
       title="Feels like"
       dialogContent={
         <>
+          <h3 className="font-bold text-xl relative">
+            Feels like {Math.round(apparentTemp)}º
+          </h3>
+          <p className="text-muted-foreground mb-2 font-bold text-sm">
+            Actual: {Math.round(actualTemp)}º
+          </p>
           <LineChart
             responsive
             className="w-full aspect-square select-none pointer-events-none"
