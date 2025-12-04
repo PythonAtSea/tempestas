@@ -112,8 +112,8 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
             <ReferenceLine
               x={new Date().setMinutes(0, 0, 0)}
               stroke="currentColor"
-              strokeDasharray="3 3"
               strokeOpacity={0.5}
+              strokeWidth={3}
             />
             <Line
               type="monotone"
