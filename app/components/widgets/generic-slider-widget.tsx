@@ -16,6 +16,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Info } from "lucide-react";
 
 interface GenericSliderWidgetProps {
   icon: string;
@@ -61,6 +62,7 @@ export default function GenericSliderWidget({
       <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
         <i className={`wi wi-fw ${icon}`} />
         {title}
+        {dialogContent && <Info className="w-4 h-4 ml-auto" />}
       </p>
       {children}
     </div>
