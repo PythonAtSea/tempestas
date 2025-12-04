@@ -11,6 +11,7 @@ type SliderProps = {
   pillText?: ReactNode;
   pillBgColor?: string;
   pillTextColor?: string;
+  scaleGradient?: boolean;
 };
 
 export default function Slider({
@@ -24,13 +25,33 @@ export default function Slider({
   pillText,
   pillBgColor = "#ffffff",
   pillTextColor = "#000000",
+  scaleGradient = false,
 }: SliderProps) {
   const defaultGradient =
     "linear-gradient(to right, #00a000 0%, #00a000 5%, #ffff00 33%, #ff0000 66%, #800080 95%, #800080 100%)";
-  const bg = gradient ?? defaultGradient;
+  const baseGradient = gradient ?? defaultGradient;
   const left = Math.max(0, Math.min(100, Math.min(start, end)));
   const right = Math.max(0, Math.min(100, Math.max(start, end)));
   const width = Math.max(0, right - left);
+
+  const getScaledGradient = () => {
+    if (!scaleGradient) return baseGradient;
+    return baseGradient;
+  };
+
+  const bg = getScaledGradient();
+  const getBackgroundStyle = () => {
+    if (!scaleGradient || width === 0) {
+      return { background: bg };
+    }
+    const scale = 100 / width;
+    const offsetPercent = (left / width) * 100;
+    return {
+      background: bg,
+      backgroundSize: `${scale * 100}% 100%`,
+      backgroundPosition: `-${offsetPercent}% 0`,
+    };
+  };
   const dot =
     dotPercent !== undefined
       ? Math.max(0, Math.min(100, dotPercent ?? 0))
@@ -100,7 +121,7 @@ export default function Slider({
         style={{
           left: `${left}%`,
           width: `${width}%`,
-          background: bg,
+          ...getBackgroundStyle(),
         }}
       />
       {dot !== undefined && dotPercent !== null && (

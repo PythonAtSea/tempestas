@@ -90,9 +90,7 @@ export default function GenericSliderWidget({
               <DrawerTitle>{title}</DrawerTitle>
             </DrawerHeader>
           </VisuallyHidden>
-          <div className="max-h-[80vh] overflow-y-auto px-6 pb-6">
-            {dialogContent}
-          </div>
+          <div className="overflow-y-auto px-6 pb-6">{dialogContent}</div>
         </DrawerContent>
       </Drawer>
     );
