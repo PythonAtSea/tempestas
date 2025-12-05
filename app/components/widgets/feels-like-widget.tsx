@@ -147,6 +147,7 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
         start={Math.min(isColder ? 100 : 0, sliderValue)}
         end={Math.max(isColder ? 100 : 0, sliderValue)}
         dotPercent={isColder ? 100 : 0}
+        dotColor="white"
         pillPercent={sliderValue}
         pillText={
           <span className="flex items-center">

@@ -76,6 +76,7 @@ export default function Component({
       gradient={gradientBackground}
       start={left}
       end={right}
+      dotColor="white"
       dotPercent={dotTemp !== null ? dot : undefined}
       className={className}
     />

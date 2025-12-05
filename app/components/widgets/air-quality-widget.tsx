@@ -30,10 +30,11 @@ export default function AirQualityWidget({
       </p>
       <Slider
         start={0}
-        end={100}
+        end={aqi / 5}
         dotPercent={aqi / 5}
         gradient="linear-gradient(to right, #00e400 0%, #ffff00 17%, #ff7e00 34%, #ff0000 50%, #8f3f97 67%, #7e0023 100%)"
         className="mt-auto mb-2"
+        scaleGradient
       />
     </GenericSliderWidget>
   );
