@@ -1,9 +1,16 @@
 "use client";
 
 import { WeatherResponse } from "@/lib/types/weather";
+import { getColorForTemp } from "@/lib/get-color-for-temp";
 import GenericSliderWidget from "./generic-slider-widget";
 import Slider from "../slider";
 import { Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
+
+const CLOUD_COVER_STOPS = [
+  { temp: 0, color: "#29B6F6" },
+  { temp: 50, color: "#7E8C9A" },
+  { temp: 100, color: "#37474F" },
+];
 
 interface CloudCoverWidgetProps {
   weatherData?: WeatherResponse;
@@ -25,6 +32,39 @@ export default function CloudCoverWidget({
         time: new Date(time),
         cloudCover: weatherData.hourly.cloud_cover[index],
       })) || [];
+
+  const allCloudCover = chartData.map((d) => d.cloudCover);
+  const minCloudCover = Math.min(...allCloudCover);
+  const maxCloudCover = Math.max(...allCloudCover);
+
+  const gradientStops: { offset: string; color: string }[] = [];
+
+  if (chartData.length > 0) {
+    gradientStops.push({
+      offset: "0%",
+      color: getColorForTemp(maxCloudCover, CLOUD_COVER_STOPS),
+    });
+
+    [...CLOUD_COVER_STOPS]
+      .sort((a, b) => b.temp - a.temp)
+      .forEach((stop) => {
+        if (stop.temp < maxCloudCover && stop.temp > minCloudCover) {
+          const offset =
+            ((maxCloudCover - stop.temp) /
+              (maxCloudCover - minCloudCover || 1)) *
+            100;
+          gradientStops.push({
+            offset: `${offset}%`,
+            color: stop.color,
+          });
+        }
+      });
+
+    gradientStops.push({
+      offset: "100%",
+      color: getColorForTemp(minCloudCover, CLOUD_COVER_STOPS),
+    });
+  }
 
   const getCloudLabel = (value: number) => {
     if (value < 20) return "Clear";
@@ -70,9 +110,13 @@ export default function CloudCoverWidget({
                 x2="0"
                 y2="1"
               >
-                <stop offset="0%" stopColor="#37474F" />
-                <stop offset="50%" stopColor="#7E8C9A" />
-                <stop offset="100%" stopColor="#29B6F6" />
+                {gradientStops.map((stop, index) => (
+                  <stop
+                    key={index}
+                    offset={stop.offset}
+                    stopColor={stop.color}
+                  />
+                ))}
               </linearGradient>
             </defs>
             <YAxis domain={[0, 100]} allowDecimals={false} width="auto" />
