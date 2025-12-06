@@ -16,7 +16,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Info } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 interface GenericSliderWidgetProps {
   icon: string;
@@ -55,14 +55,16 @@ export default function GenericSliderWidget({
     <div
       className={`aspect-square border bg-muted/20 p-3 flex flex-col relative ${
         dialogContent
-          ? "cursor-pointer hover:bg-muted/30 transition-colors"
+          ? "cursor-pointer hover:bg-muted/30 active:bg-muted/30"
           : ""
       }`}
     >
       <p className="text-muted-foreground text-sm flex flex-row items-center gap-2">
         <i className={`wi wi-fw ${icon}`} />
         {title}
-        {dialogContent && <Info className="w-4 h-4 ml-auto" />}
+        {dialogContent && (
+          <ChevronRight className="size-4 ml-auto text-muted-foreground" />
+        )}
       </p>
       {children}
     </div>

@@ -18,6 +18,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { AlertsResponse } from "@/lib/types/weather";
+import { ChevronRight } from "lucide-react";
 
 interface WeatherAlertsProps {
   alertsData: AlertsResponse | null;
@@ -122,12 +123,10 @@ export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
     <div className="p-6 w-full pb-0" suppressHydrationWarning>
       <div className={`border ${borderClass} w-full ${bgClass}`}>
         <div
-          className={`${headerBgClass} mt-0 p-2 px-4 ${textClass} flex flex-row`}
+          className={`${headerBgClass} mt-0 p-2 px-4 ${textClass} flex flex-row items-center`}
         >
           {alert.properties.event || "Weather Alert"}
-          <span className="ml-auto text-blue-600 cursor-pointer">
-            More details
-          </span>
+          <ChevronRight className="size-5 ml-auto" />
         </div>
         <p className="p-4">{alert.properties.headline || ""}</p>
       </div>
