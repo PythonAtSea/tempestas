@@ -88,7 +88,7 @@ export default function GenericSliderWidget({
     return (
       <Drawer>
         <DrawerTrigger asChild>{triggerCard}</DrawerTrigger>
-        <DrawerContent className="select-none">
+        <DrawerContent className="select-none outline-none">
           <VisuallyHidden asChild>
             <DrawerHeader>
               <DrawerTitle>{title}</DrawerTitle>
