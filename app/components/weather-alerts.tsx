@@ -119,7 +119,7 @@ export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
     headerBgClass: string,
     textClass: string
   ) => (
-    <div className="p-6 w-full pb-0">
+    <div className="p-6 w-full pb-0" suppressHydrationWarning>
       <div className={`border ${borderClass} w-full ${bgClass}`}>
         <div
           className={`${headerBgClass} mt-0 p-2 px-4 ${textClass} flex flex-row`}
