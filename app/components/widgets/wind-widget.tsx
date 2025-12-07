@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/drawer";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ChevronRight } from "lucide-react";
+import { Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 
 function useIsFinePointer() {
   const getInitial = () =>
@@ -40,6 +41,20 @@ function useIsFinePointer() {
 interface WindWidgetProps {
   weatherData: WeatherResponse;
 }
+
+const WIND_COLOR_STOPS = [
+  { speed: 0, color: "#1d2a3a" },
+  { speed: 3, color: "#26405a" },
+  { speed: 7, color: "#2f5f87" },
+  { speed: 12, color: "#377fc0" },
+  { speed: 18, color: "#2f9dff" },
+  { speed: 25, color: "#0086ff" },
+  { speed: 32, color: "#ffbb3b" },
+  { speed: 40, color: "#ff9933" },
+  { speed: 50, color: "#ff6a29" },
+  { speed: 60, color: "#ff3c2b" },
+  { speed: 75, color: "#e0001a" },
+];
 
 export default function WindWidget({ weatherData }: WindWidgetProps) {
   const isFinePointer = useIsFinePointer();
@@ -261,15 +276,105 @@ export default function WindWidget({ weatherData }: WindWidgetProps) {
     </div>
   );
 
+  const chartData = weatherData.hourly.time
+    .filter((time) => {
+      const date = new Date(time);
+      const now = new Date();
+      return date.getDay() === now.getDay();
+    })
+    .map((timeStr, i) => {
+      const speed = weatherData.hourly.wind_speed_10m[i];
+      const gusts = weatherData.hourly.wind_gusts_10m[i];
+      const direction = weatherData.hourly.wind_direction_10m[i];
+      return {
+        time: timeStr,
+        speed: speed,
+        gusts: gusts,
+        direction: direction,
+      };
+    });
+
+  const allWindSpeeds = chartData.map((d) => d.speed);
+  const minSpeed = Math.min(...allWindSpeeds);
+  const maxSpeed = Math.max(...allWindSpeeds);
+
+  const sortedStops = [...WIND_COLOR_STOPS].sort((a, b) => b.speed - a.speed);
+  const windGradientStops = sortedStops
+    .filter((stop) => stop.speed >= minSpeed - 5 && stop.speed <= maxSpeed + 5)
+    .map((stop) => {
+      const percent =
+        ((maxSpeed - stop.speed) / (maxSpeed - minSpeed || 1)) * 100;
+      return {
+        offset: `${Math.max(0, Math.min(100, percent))}%`,
+        color: stop.color,
+      };
+    });
+
   const dialogContent = (
     <>
       <h3 className="text-xl font-bold">
-        Wind{" "}
+        Wind:{" "}
         <span className="font-mono">
           {Math.round(weatherData.current.wind_speed_10m)}
           <span className="text-sm text-muted-foreground">MPH</span>
         </span>
       </h3>
+      <p className="text-muted-foreground mb-2 font-bold text-sm">
+        Gusts: {Math.round(weatherData.current.wind_gusts_10m)}
+        <span className="text-xs">MPH</span>
+      </p>
+      <LineChart
+        responsive
+        data={chartData}
+        className="w-full aspect-square select-none pointer-events-none"
+      >
+        <defs>
+          <linearGradient id="windGradient" x1="0" y1="0" x2="0" y2="1">
+            {windGradientStops.map((stop, index) => (
+              <stop key={index} offset={stop.offset} stopColor={stop.color} />
+            ))}
+          </linearGradient>
+        </defs>
+        <XAxis
+          dataKey="time"
+          tickFormatter={(time) => {
+            const date = new Date(time);
+            const hours = date.getHours();
+            const period = hours >= 12 ? "pm" : "am";
+            const displayHours = hours % 12 || 12;
+            return `${displayHours}${period}`;
+          }}
+          interval={6}
+        />
+        <YAxis
+          domain={["dataMin - 2", "dataMax + 2"]}
+          allowDecimals={false}
+          width="auto"
+        />
+        <Line
+          isAnimationActive={false}
+          type="monotone"
+          dataKey="speed"
+          stroke="url(#windGradient)"
+          strokeWidth={4}
+          dot={false}
+        />
+        <Line
+          isAnimationActive={false}
+          type="monotone"
+          dataKey="gusts"
+          stroke="currentColor"
+          strokeOpacity={0.5}
+          strokeWidth={4}
+          dot={false}
+        />
+        <ReferenceLine
+          x={new Date().setMinutes(0, 0, 0)}
+          stroke="currentColor"
+          strokeOpacity={0.5}
+          strokeWidth={3}
+        />
+      </LineChart>
     </>
   );
 
@@ -295,7 +400,7 @@ export default function WindWidget({ weatherData }: WindWidgetProps) {
     <div className="col-span-2" style={{ containerType: "inline-size" }}>
       <Drawer>
         <DrawerTrigger asChild>{content}</DrawerTrigger>
-        <DrawerContent>
+        <DrawerContent className="select-none outline-none">
           <VisuallyHidden asChild>
             <DrawerHeader>
               <DrawerTitle>Wind</DrawerTitle>
