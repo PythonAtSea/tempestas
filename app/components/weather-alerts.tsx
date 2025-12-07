@@ -42,7 +42,7 @@ function useIsFinePointer() {
   return isFine;
 }
 
-const DEMO_ALERT = true;
+const DEMO_ALERT = false;
 
 export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
   const isFinePointer = useIsFinePointer();

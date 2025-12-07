@@ -7,16 +7,12 @@ import WindWidget from "./widgets/wind-widget";
 import SunWidget from "./widgets/sun-widget";
 import HumidityWidget from "./widgets/humidity-widget";
 import CloudCoverWidget from "./widgets/cloud-cover-widget";
-import AirQualityWidget from "./widgets/air-quality-widget";
 interface WeatherWidgetsProps {
   weatherData: WeatherResponse;
   airQualityData: AirQualityResponse | null;
 }
 
-export default function WeatherWidgets({
-  weatherData,
-  airQualityData,
-}: WeatherWidgetsProps) {
+export default function WeatherWidgets({ weatherData }: WeatherWidgetsProps) {
   return (
     <div className="w-full px-6 pb-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
