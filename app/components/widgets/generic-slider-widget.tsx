@@ -23,6 +23,7 @@ interface GenericSliderWidgetProps {
   title: string;
   children: ReactNode;
   dialogContent?: ReactNode;
+  removePadding?: boolean;
 }
 
 function useIsFinePointer() {
@@ -48,6 +49,7 @@ export default function GenericSliderWidget({
   title,
   children,
   dialogContent,
+  removePadding = false,
 }: GenericSliderWidgetProps) {
   const isFinePointer = useIsFinePointer();
 
@@ -74,7 +76,9 @@ export default function GenericSliderWidget({
     return (
       <Dialog>
         <DialogTrigger asChild>{triggerCard}</DialogTrigger>
-        <DialogContent>
+        <DialogContent
+          className={removePadding ? "p-0 block gap-0" : undefined}
+        >
           <VisuallyHidden asChild>
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
@@ -94,7 +98,13 @@ export default function GenericSliderWidget({
               <DrawerTitle>{title}</DrawerTitle>
             </DrawerHeader>
           </VisuallyHidden>
-          <div className="overflow-y-auto px-6 pb-6">{dialogContent}</div>
+          <div
+            className={`overflow-y-auto ${
+              removePadding ? "pb-6" : "px-6 pb-6"
+            }`}
+          >
+            {dialogContent}
+          </div>
         </DrawerContent>
       </Drawer>
     );

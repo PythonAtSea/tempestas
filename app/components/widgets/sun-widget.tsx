@@ -2,9 +2,29 @@
 
 import { WeatherResponse } from "@/lib/types/weather";
 import GenericSliderWidget from "./generic-slider-widget";
+import { ReactNode } from "react";
 
 interface SunWidgetProps {
   weatherData: WeatherResponse;
+}
+
+function InfoItem({
+  iconClass,
+  title,
+  children,
+}: {
+  iconClass: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <span className="flex flex-row items-center border-b-2 last:border-b-0 py-2">
+      <i className={`${iconClass} mr-2 text-muted-foreground`} />
+      <span className="font-bold mr-auto text-muted-foreground">{title}</span>
+      &nbsp;
+      <span className="font-mono font-bold">{children}</span>
+    </span>
+  );
 }
 
 export default function SunWidget({ weatherData }: SunWidgetProps) {
@@ -81,12 +101,42 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
     <GenericSliderWidget
       icon={isDay ? "wi-sunset" : "wi-sunrise"}
       title={isDay ? "Sunset" : "Sunrise"}
+      removePadding={true}
       dialogContent={
-        <>
-          <h3 className="text-xl font-bold">
-            {isDay ? "Sunset" : "Sunrise"} at{" "}
-            <span className="font-mono">
-              {eventTime
+        <div className="flex flex-col">
+          <div className="p-6 pb-0">
+            <h3 className="text-xl font-bold">
+              {isDay ? "Sunset" : "Sunrise"} at{" "}
+              <span className="font-mono">
+                {eventTime
+                  .toLocaleTimeString(undefined, {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                  .replace(/\s?(AM|PM)$/i, "")}
+                <span className="text-muted-foreground text-xs">
+                  {eventTime.getHours() >= 12 ? "PM" : "AM"}
+                </span>
+              </span>
+            </h3>
+          </div>
+          <SunGraph
+            wavePath={wavePath}
+            adjustedYPos={adjustedYPos}
+            totalSvgHeight={totalSvgHeight}
+            nowXPos={nowXPos}
+            adjustedNowYPos={adjustedNowYPos}
+            isDay={isDay}
+            sunrisePos={sunrisePos}
+            sunsetPos={sunsetPos}
+            showDebug={SHOW_DEBUG}
+            idPrefix="dialog"
+            className="mt-4 h-48"
+          />
+          <div className="p-6 pt-0 -mt-4">
+            <InfoItem iconClass="wi wi-sunrise wi-fw" title="Sunrise:">
+              {new Date(weatherData?.daily.sunrise[1])
                 .toLocaleTimeString(undefined, {
                   hour: "numeric",
                   minute: "2-digit",
@@ -94,11 +144,74 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
                 })
                 .replace(/\s?(AM|PM)$/i, "")}
               <span className="text-muted-foreground text-xs">
-                {eventTime.getHours() >= 12 ? "PM" : "AM"}
+                {new Date(weatherData?.daily.sunrise[1]).getHours() >= 12
+                  ? "PM"
+                  : "AM"}
               </span>
-            </span>
-          </h3>
-        </>
+            </InfoItem>
+            <InfoItem iconClass="wi wi-sunset wi-fw" title="Sunset:">
+              {new Date(weatherData?.daily.sunset[0])
+                .toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+                .replace(/\s?(AM|PM)$/i, "")}
+              <span className="text-muted-foreground text-xs">
+                {new Date(weatherData?.daily.sunset[0]).getHours() >= 12
+                  ? "PM"
+                  : "AM"}
+              </span>
+            </InfoItem>
+            <InfoItem iconClass="wi wi-day-sunny wi-fw" title="Day Length:">
+              {weatherData?.daily.sunrise[0] && weatherData?.daily.sunset[0]
+                ? (() => {
+                    const sunrise = new Date(weatherData.daily.sunrise[0]);
+                    const sunset = new Date(weatherData.daily.sunset[0]);
+                    const dayLengthMs = sunset.getTime() - sunrise.getTime();
+                    const hours = Math.floor(dayLengthMs / (1000 * 60 * 60));
+                    const minutes = Math.floor(
+                      (dayLengthMs % (1000 * 60 * 60)) / (1000 * 60)
+                    );
+                    return (
+                      <span>
+                        {hours}
+                        <span className="text-muted-foreground text-xs">
+                          H
+                        </span>{" "}
+                        {minutes}
+                        <span className="text-muted-foreground text-xs">M</span>
+                      </span>
+                    );
+                  })()
+                : "N/A"}
+            </InfoItem>
+            <InfoItem iconClass="wi wi-night-clear wi-fw" title="Night Length:">
+              {weatherData?.daily.sunrise[1] && weatherData?.daily.sunset[0]
+                ? (() => {
+                    const sunset = new Date(weatherData.daily.sunset[0]);
+                    const nextSunrise = new Date(weatherData.daily.sunrise[1]);
+                    const nightLengthMs =
+                      nextSunrise.getTime() - sunset.getTime();
+                    const hours = Math.floor(nightLengthMs / (1000 * 60 * 60));
+                    const minutes = Math.floor(
+                      (nightLengthMs % (1000 * 60 * 60)) / (1000 * 60)
+                    );
+                    return (
+                      <span>
+                        {hours}
+                        <span className="text-muted-foreground text-xs">
+                          H
+                        </span>{" "}
+                        {minutes}
+                        <span className="text-muted-foreground text-xs">M</span>
+                      </span>
+                    );
+                  })()
+                : "N/A"}
+            </InfoItem>
+          </div>
+        </div>
       }
     >
       <h3 className="font-bold font-mono text-3xl relative mt-2">
@@ -152,25 +265,83 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
           </span>
         )}
       </p>
+      <div className="absolute left-0 right-0 top-1/2 w-full h-[35%]">
+        <SunGraph
+          wavePath={wavePath}
+          adjustedYPos={adjustedYPos}
+          totalSvgHeight={totalSvgHeight}
+          nowXPos={nowXPos}
+          adjustedNowYPos={adjustedNowYPos}
+          isDay={isDay}
+          sunrisePos={sunrisePos}
+          sunsetPos={sunsetPos}
+          showDebug={SHOW_DEBUG}
+          idPrefix="widget"
+        />
+      </div>
+    </GenericSliderWidget>
+  );
+}
+
+interface SunGraphProps {
+  wavePath: string;
+  adjustedYPos: number;
+  totalSvgHeight: number;
+  nowXPos: number;
+  adjustedNowYPos: number;
+  isDay: boolean;
+  sunrisePos: { x: number; y: number } | null;
+  sunsetPos: { x: number; y: number } | null;
+  showDebug: boolean;
+  idPrefix: string;
+  className?: string;
+}
+
+function SunGraph({
+  wavePath,
+  adjustedYPos,
+  totalSvgHeight,
+  nowXPos,
+  adjustedNowYPos,
+  isDay,
+  sunrisePos,
+  sunsetPos,
+  showDebug,
+  idPrefix,
+  className,
+}: SunGraphProps) {
+  return (
+    <div className={`relative w-full h-full ${className ?? ""}`}>
       <svg
-        className="absolute left-0 right-0 top-1/2 w-full"
+        className="w-full h-full"
         viewBox={`0 0 100 ${totalSvgHeight}`}
         preserveAspectRatio="none"
-        style={{ height: "35%" }}
       >
         <defs>
-          <linearGradient id="aboveGradient" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient
+            id={`${idPrefix}-aboveGradient`}
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
             <stop offset="0%" stopColor="white" stopOpacity="0.7" />
             <stop offset="100%" stopColor="white" stopOpacity="0.0" />
           </linearGradient>
-          <linearGradient id="belowGradient" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient
+            id={`${idPrefix}-belowGradient`}
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
             <stop offset="0%" stopColor="white" stopOpacity="0.3" />
             <stop offset="100%" stopColor="white" stopOpacity="0.02" />
           </linearGradient>
-          <clipPath id="clipAbove">
+          <clipPath id={`${idPrefix}-clipAbove`}>
             <rect x="0" y="0" width="100" height={adjustedYPos} />
           </clipPath>
-          <clipPath id="clipBelow">
+          <clipPath id={`${idPrefix}-clipBelow`}>
             <rect
               x="0"
               y={adjustedYPos}
@@ -182,18 +353,18 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
         <path
           d={wavePath}
           fill="none"
-          stroke="url(#aboveGradient)"
+          stroke={`url(#${idPrefix}-aboveGradient)`}
           strokeWidth="2"
           vectorEffect="non-scaling-stroke"
-          clipPath="url(#clipAbove)"
+          clipPath={`url(#${idPrefix}-clipAbove)`}
         />
         <path
           d={wavePath}
           fill="none"
-          stroke="url(#belowGradient)"
+          stroke={`url(#${idPrefix}-belowGradient)`}
           strokeWidth="2"
           vectorEffect="non-scaling-stroke"
-          clipPath="url(#clipBelow)"
+          clipPath={`url(#${idPrefix}-clipBelow)`}
         />
         <line
           x1={0}
@@ -205,7 +376,7 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
           vectorEffect="non-scaling-stroke"
         />
       </svg>
-      <div className="absolute left-0 right-0 top-1/2 w-full h-[35%] pointer-events-none">
+      <div className="absolute left-0 right-0 top-0 bottom-0 pointer-events-none">
         <div
           className={`absolute -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${
             !isDay ? "bg-black" : "bg-white"
@@ -216,7 +387,7 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
             top: `${(adjustedNowYPos / totalSvgHeight) * 100}%`,
           }}
         />
-        {sunrisePos && SHOW_DEBUG && (
+        {sunrisePos && showDebug && (
           <div
             className="absolute -translate-x-1/2 -translate-y-1/2 size-0.5 rounded-full bg-red-500"
             style={{
@@ -225,7 +396,7 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
             }}
           />
         )}
-        {sunsetPos && SHOW_DEBUG && (
+        {sunsetPos && showDebug && (
           <div
             className="absolute -translate-x-1/2 -translate-y-1/2 size-0.5 rounded-full bg-red-500"
             style={{
@@ -235,6 +406,6 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
           />
         )}
       </div>
-    </GenericSliderWidget>
+    </div>
   );
 }
