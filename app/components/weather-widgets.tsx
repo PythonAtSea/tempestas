@@ -26,7 +26,7 @@ export default function WeatherWidgets({
         <UVIndexWidget weatherData={weatherData} />
         <CloudCoverWidget weatherData={weatherData} />
         <HumidityWidget weatherData={weatherData} />
-        <AirQualityWidget airQualityData={airQualityData} />
+        {/* <AirQualityWidget airQualityData={airQualityData} /> */}
       </div>
     </div>
   );
