@@ -8,6 +8,8 @@ interface SunWidgetProps {
 }
 
 export default function SunWidget({ weatherData }: SunWidgetProps) {
+  const SHOW_DEBUG = false;
+
   const isDay = weatherData?.current?.is_day === 1;
   const eventKey = isDay ? "sunset" : "sunrise";
   const eventTime = new Date(weatherData?.daily[eventKey][0]);
@@ -21,14 +23,26 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
   const minutes = eventTime.getMinutes();
   const totalMinutes = hours * 60 + minutes;
   const xPos = (totalMinutes / (24 * 60)) * 100;
+
+  const todaySunrise = new Date(weatherData?.daily?.sunrise?.[0]);
+  const todaySunset = new Date(weatherData?.daily?.sunset?.[0]);
+  const sunriseMinutes =
+    todaySunrise.getHours() * 60 + todaySunrise.getMinutes();
+  const sunsetMinutes = todaySunset.getHours() * 60 + todaySunset.getMinutes();
+  const solarNoonMinutes = (sunriseMinutes + sunsetMinutes) / 2;
+  const solarNoonPos = (solarNoonMinutes / (24 * 60)) * 100;
+  const shift = solarNoonPos - 50;
+
   const yPos =
-    waveCenterY + waveAmplitude * Math.cos((xPos / 100) * 2 * Math.PI);
+    waveCenterY +
+    waveAmplitude * Math.cos(((xPos - shift) / 100) * 2 * Math.PI);
 
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const nowXPos = (nowMinutes / (24 * 60)) * 100;
   const nowYPos =
-    waveCenterY + waveAmplitude * Math.cos((nowXPos / 100) * 2 * Math.PI);
+    waveCenterY +
+    waveAmplitude * Math.cos(((nowXPos - shift) / 100) * 2 * Math.PI);
 
   const wavePath = (() => {
     const points: string[] = [];
@@ -38,7 +52,7 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
       const y =
         padding +
         waveCenterY +
-        waveAmplitude * Math.cos((i / steps) * 2 * Math.PI);
+        waveAmplitude * Math.cos(((x - shift) / 100) * 2 * Math.PI);
       points.push(`${i === 0 ? "M" : "L"}${x},${y}`);
     }
     return points.join(" ");
@@ -48,10 +62,44 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
   const adjustedNowYPos = nowYPos + padding;
   const totalSvgHeight = svgHeight + padding * 2;
 
+  const getPos = (dateStr: string | undefined) => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    const minutes = date.getHours() * 60 + date.getMinutes();
+    const x = (minutes / (24 * 60)) * 100;
+    const y =
+      padding +
+      waveCenterY +
+      waveAmplitude * Math.cos(((x - shift) / 100) * 2 * Math.PI);
+    return { x, y };
+  };
+
+  const sunrisePos = getPos(weatherData?.daily?.sunrise?.[0]);
+  const sunsetPos = getPos(weatherData?.daily?.sunset?.[0]);
+
   return (
     <GenericSliderWidget
       icon={isDay ? "wi-sunset" : "wi-sunrise"}
       title={isDay ? "Sunset" : "Sunrise"}
+      dialogContent={
+        <>
+          <h3 className="text-xl font-bold">
+            {isDay ? "Sunset" : "Sunrise"} at{" "}
+            <span className="font-mono">
+              {eventTime
+                .toLocaleTimeString(undefined, {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+                .replace(/\s?(AM|PM)$/i, "")}
+              <span className="text-muted-foreground text-xs">
+                {eventTime.getHours() >= 12 ? "PM" : "AM"}
+              </span>
+            </span>
+          </h3>
+        </>
+      }
     >
       <h3 className="font-bold font-mono text-3xl relative mt-2">
         {eventTime
@@ -168,6 +216,24 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
             top: `${(adjustedNowYPos / totalSvgHeight) * 100}%`,
           }}
         />
+        {sunrisePos && SHOW_DEBUG && (
+          <div
+            className="absolute -translate-x-1/2 -translate-y-1/2 size-0.5 rounded-full bg-red-500"
+            style={{
+              left: `${sunrisePos.x}%`,
+              top: `${(sunrisePos.y / totalSvgHeight) * 100}%`,
+            }}
+          />
+        )}
+        {sunsetPos && SHOW_DEBUG && (
+          <div
+            className="absolute -translate-x-1/2 -translate-y-1/2 size-0.5 rounded-full bg-red-500"
+            style={{
+              left: `${sunsetPos.x}%`,
+              top: `${(sunsetPos.y / totalSvgHeight) * 100}%`,
+            }}
+          />
+        )}
       </div>
     </GenericSliderWidget>
   );
