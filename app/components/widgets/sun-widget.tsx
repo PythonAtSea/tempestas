@@ -4,6 +4,62 @@ import { WeatherResponse } from "@/lib/types/weather";
 import GenericSliderWidget from "./generic-slider-widget";
 import { ReactNode } from "react";
 
+const PI = Math.PI;
+const sin = Math.sin;
+const cos = Math.cos;
+const asin = Math.asin;
+const acos = Math.acos;
+const rad = PI / 180;
+
+const J1970 = 2440588;
+const J2000 = 2451545;
+
+function toJulian(date: Date) {
+  return date.valueOf() / 86400000 - 0.5 + J1970;
+}
+function fromJulian(j: number) {
+  return new Date((j + 0.5 - J1970) * 86400000);
+}
+function toDays(date: Date) {
+  return toJulian(date) - J2000;
+}
+
+function getSunTimes(date: Date, lat: number, lng: number) {
+  const times: Record<string, Date> = {};
+  const lw = rad * -lng;
+  const phi = rad * lat;
+  const d = toDays(date);
+  const n = Math.round(d - 0.0009 - lw / (2 * PI));
+  const Jstar = J2000 + 0.0009 + lw / (2 * PI) + n;
+
+  const M = rad * (357.5291 + 0.98560028 * (Jstar - J2000));
+  const C = rad * (1.9148 * sin(M) + 0.02 * sin(2 * M) + 0.0003 * sin(3 * M));
+  const lambda = rad * (280.4665 + 0.98564736 * (Jstar - J2000)) + C;
+  const Jtransit = Jstar + 0.0053 * sin(M) - 0.0069 * sin(2 * lambda);
+  const delta = asin(sin(lambda) * sin(rad * 23.4397));
+
+  const getHourAngle = (h: number) => {
+    const c = (sin(rad * h) - sin(phi) * sin(delta)) / (cos(phi) * cos(delta));
+    if (c > 1 || c < -1) return null;
+    return acos(c);
+  };
+
+  const addTime = (name: string, h: number) => {
+    const w = getHourAngle(h);
+    if (w === null) return;
+    const Jrise = Jtransit - w / (2 * PI);
+    const Jset = Jtransit + w / (2 * PI);
+    times[name + "Rise"] = fromJulian(Jrise);
+    times[name + "Set"] = fromJulian(Jset);
+  };
+
+  addTime("civil", -6);
+  addTime("nautical", -12);
+  addTime("astronomical", -18);
+
+  return times;
+}
+
 interface SunWidgetProps {
   weatherData: WeatherResponse;
 }
@@ -29,6 +85,32 @@ function InfoItem({
 
 export default function SunWidget({ weatherData }: SunWidgetProps) {
   const SHOW_DEBUG = false;
+
+  const todayDate = new Date(weatherData?.daily?.sunrise?.[0]);
+  const sunTimes = getSunTimes(
+    todayDate,
+    weatherData.latitude,
+    weatherData.longitude
+  );
+
+  const renderTime = (date: Date | undefined) => {
+    if (!date) return "N/A";
+    const fullStr = date.toLocaleTimeString("en-US", {
+      timeZone: weatherData.timezone,
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const timeStr = fullStr.replace(/\s?(AM|PM)$/i, "");
+    const ampm = fullStr.match(/(AM|PM)/i)?.[0] || "";
+
+    return (
+      <>
+        {timeStr}
+        <span className="text-muted-foreground text-xs">{ampm}</span>
+      </>
+    );
+  };
 
   const isDay = weatherData?.current?.is_day === 1;
   const eventKey = isDay ? "sunset" : "sunrise";
@@ -94,8 +176,45 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
     return { x, y };
   };
 
+  const getPosFromDate = (date: Date | undefined) => {
+    if (!date) return null;
+    const minutes = date.getHours() * 60 + date.getMinutes();
+    const x = (minutes / (24 * 60)) * 100;
+    const y =
+      padding +
+      waveCenterY +
+      waveAmplitude * Math.cos(((x - shift) / 100) * 2 * Math.PI);
+    return { x, y };
+  };
+
   const sunrisePos = getPos(weatherData?.daily?.sunrise?.[0]);
   const sunsetPos = getPos(weatherData?.daily?.sunset?.[0]);
+
+  const twilightPositions = [
+    { pos: getPosFromDate(sunTimes.civilRise), color: "bg-muted-foreground" },
+    { pos: getPosFromDate(sunTimes.civilSet), color: "bg-muted-foreground" },
+    {
+      pos: getPosFromDate(sunTimes.nauticalRise),
+      color: "bg-muted-foreground/70",
+    },
+    {
+      pos: getPosFromDate(sunTimes.nauticalSet),
+      color: "bg-muted-foreground/70",
+    },
+    {
+      pos: getPosFromDate(sunTimes.astronomicalRise),
+      color: "bg-muted-foreground/50",
+    },
+    {
+      pos: getPosFromDate(sunTimes.astronomicalSet),
+      color: "bg-muted-foreground/50",
+    },
+  ]
+    .filter(
+      (item): item is { pos: { x: number; y: number }; color: string } =>
+        item.pos !== null
+    )
+    .map((item) => ({ ...item.pos, color: item.color }));
 
   return (
     <GenericSliderWidget
@@ -133,6 +252,7 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
             showDebug={SHOW_DEBUG}
             idPrefix="dialog"
             className="mt-4 h-48"
+            twilightPositions={twilightPositions}
           />
           <div className="p-6 pt-0 -mt-4">
             <InfoItem iconClass="wi wi-sunrise wi-fw" title="Sunrise:">
@@ -162,6 +282,31 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
                   ? "PM"
                   : "AM"}
               </span>
+            </InfoItem>
+            <InfoItem iconClass="wi wi-hot wi-fw" title="Solar Noon:">
+              {weatherData?.daily.sunrise[0] && weatherData?.daily.sunset[0]
+                ? (() => {
+                    const sunrise = new Date(weatherData.daily.sunrise[0]);
+                    const sunset = new Date(weatherData.daily.sunset[0]);
+                    const solarNoon = new Date(
+                      (sunrise.getTime() + sunset.getTime()) / 2
+                    );
+                    return (
+                      <>
+                        {solarNoon
+                          .toLocaleTimeString(undefined, {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                          .replace(/\s?(AM|PM)$/i, "")}
+                        <span className="text-muted-foreground text-xs">
+                          {solarNoon.getHours() >= 12 ? "PM" : "AM"}
+                        </span>
+                      </>
+                    );
+                  })()
+                : "N/A"}
             </InfoItem>
             <InfoItem iconClass="wi wi-day-sunny wi-fw" title="Day Length:">
               {weatherData?.daily.sunrise[0] && weatherData?.daily.sunset[0]
@@ -209,6 +354,29 @@ export default function SunWidget({ weatherData }: SunWidgetProps) {
                     );
                   })()
                 : "N/A"}
+            </InfoItem>
+
+            <h4 className="font-bold mb-2 mt-4 text-sm text-muted-foreground uppercase tracking-wider">
+              Twilight Periods
+            </h4>
+
+            <InfoItem iconClass="wi wi-horizon" title="Civil:">
+              <span>
+                {renderTime(sunTimes.civilRise)} /{" "}
+                {renderTime(sunTimes.civilSet)}
+              </span>
+            </InfoItem>
+            <InfoItem iconClass="wi wi-horizon-alt" title="Nautical:">
+              <span>
+                {renderTime(sunTimes.nauticalRise)} /{" "}
+                {renderTime(sunTimes.nauticalSet)}
+              </span>
+            </InfoItem>
+            <InfoItem iconClass="wi wi-stars" title="Astronomical:">
+              <span>
+                {renderTime(sunTimes.astronomicalRise)} /{" "}
+                {renderTime(sunTimes.astronomicalSet)}
+              </span>
             </InfoItem>
           </div>
         </div>
@@ -295,6 +463,7 @@ interface SunGraphProps {
   showDebug: boolean;
   idPrefix: string;
   className?: string;
+  twilightPositions?: { x: number; y: number; color: string }[];
 }
 
 function SunGraph({
@@ -309,6 +478,7 @@ function SunGraph({
   showDebug,
   idPrefix,
   className,
+  twilightPositions,
 }: SunGraphProps) {
   return (
     <div className={`relative w-full h-full ${className ?? ""}`}>
@@ -387,6 +557,16 @@ function SunGraph({
             top: `${(adjustedNowYPos / totalSvgHeight) * 100}%`,
           }}
         />
+        {twilightPositions?.map((tp, i) => (
+          <div
+            key={i}
+            className={`absolute -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${tp.color}`}
+            style={{
+              left: `${tp.x}%`,
+              top: `${(tp.y / totalSvgHeight) * 100}%`,
+            }}
+          />
+        ))}
         {sunrisePos && showDebug && (
           <div
             className="absolute -translate-x-1/2 -translate-y-1/2 size-0.5 rounded-full bg-red-500"
