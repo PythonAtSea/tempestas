@@ -20,12 +20,15 @@ interface StoredLocation {
   lon?: number;
   name?: string;
   isCurrentLocation: boolean;
+  elevation?: number;
 }
 
 export default function Home() {
-  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(
-    null
-  );
+  const [coords, setCoords] = useState<{
+    lat: number;
+    lon: number;
+    elevation: number;
+  } | null>(null);
   const [locError, setLocError] = useState<string | null>(null);
   const [locationName, setLocationName] = useState<string | null>(null);
   const [geolocationSupported, setGeolocationSupported] = useState<
@@ -48,12 +51,27 @@ export default function Home() {
     async (signal?: AbortSignal) => {
       if (!coords) return;
       try {
-        const elevationResponse = await fetch(
-          `https://api.open-meteo.com/v1/elevation?latitude=${coords.lat}&longitude=${coords.lon}`,
-          { signal }
-        );
-        const elevationData = await elevationResponse.json();
-        const elevation = elevationData.elevation ?? 0;
+        let elevation = coords.elevation;
+
+        const storedLocation: StoredLocation = {
+          lat: 0,
+          lon: 0,
+          elevation: 0,
+          isCurrentLocation: false,
+        };
+        if (
+          coords.lat === storedLocation.lat &&
+          coords.lon === storedLocation.lon
+        ) {
+          elevation = storedLocation.elevation || 0;
+        } else {
+          const elevationResponse = await fetch(
+            `https://api.open-meteo.com/v1/elevation?latitude=${coords.lat}&longitude=${coords.lon}`,
+            { signal }
+          );
+          const elevationData = await elevationResponse.json();
+          elevation = elevationData.elevation ?? 0;
+        }
 
         const weatherParams = new URLSearchParams({
           latitude: coords.lat.toString(),
@@ -238,7 +256,11 @@ export default function Home() {
           storedLocation.lon
         ) {
           /* eslint-disable react-hooks/set-state-in-effect */
-          setCoords({ lat: storedLocation.lat, lon: storedLocation.lon });
+          setCoords({
+            lat: storedLocation.lat,
+            lon: storedLocation.lon,
+            elevation: storedLocation.elevation || 0,
+          });
           if (storedLocation.name) {
             setLocationName(storedLocation.name);
           }
@@ -256,7 +278,7 @@ export default function Home() {
     const DEFAULT_LON = -73.2312;
 
     const fallbackToDefaultLocation = () => {
-      setCoords({ lat: DEFAULT_LAT, lon: DEFAULT_LON });
+      setCoords({ lat: DEFAULT_LAT, lon: DEFAULT_LON, elevation: 0 });
       setIsCurrentLocation(false);
     };
 
@@ -270,7 +292,11 @@ export default function Home() {
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+        setCoords({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          elevation: pos.coords.altitude || 0,
+        });
       },
       () => {
         fallbackToDefaultLocation();
