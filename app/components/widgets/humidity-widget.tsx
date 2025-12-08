@@ -36,7 +36,7 @@ export default function Widget({ weatherData }: HumidityWidgetProps) {
   };
 
   const chartData =
-    weatherData?.hourly.time
+    weatherData?.minutely_15.time
       .filter((time) => {
         const date = new Date(time);
         const now = new Date();
@@ -44,7 +44,7 @@ export default function Widget({ weatherData }: HumidityWidgetProps) {
       })
       .map((time, index) => ({
         time: new Date(time),
-        relativeHumidity: weatherData.hourly.relative_humidity_2m[index],
+        relativeHumidity: weatherData.minutely_15.relative_humidity_2m[index],
       })) || [];
 
   const allHumidity = chartData.map((d) => d.relativeHumidity);
@@ -116,7 +116,7 @@ export default function Widget({ weatherData }: HumidityWidgetProps) {
                 const displayHours = hours % 12 || 12;
                 return `${displayHours}${period}`;
               }}
-              interval={6}
+              interval={24}
             />
             <YAxis domain={[0, 100]} allowDecimals={false} width="auto" />
             <Line
@@ -124,7 +124,7 @@ export default function Widget({ weatherData }: HumidityWidgetProps) {
               type="monotone"
               dataKey="relativeHumidity"
               stroke="url(#humidityGradient)"
-              strokeWidth={4}
+              strokeWidth={3}
               dot={false}
             />
             <ReferenceLine

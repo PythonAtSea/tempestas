@@ -22,7 +22,7 @@ export default function CloudCoverWidget({
   const cloudCover = weatherData?.current.cloud_cover || 0;
 
   const chartData =
-    weatherData?.hourly.time
+    weatherData?.minutely_15.time
       .filter((time) => {
         const date = new Date(time);
         const now = new Date();
@@ -30,7 +30,7 @@ export default function CloudCoverWidget({
       })
       .map((time, index) => ({
         time: new Date(time),
-        cloudCover: weatherData.hourly.cloud_cover[index],
+        cloudCover: weatherData.minutely_15.cloud_cover[index],
       })) || [];
 
   const allCloudCover = chartData.map((d) => d.cloudCover);
@@ -100,7 +100,7 @@ export default function CloudCoverWidget({
                 const displayHours = hours % 12 || 12;
                 return `${displayHours}${period}`;
               }}
-              interval={6}
+              interval={24}
             />
             <defs>
               <linearGradient
@@ -125,7 +125,7 @@ export default function CloudCoverWidget({
               type="monotone"
               dataKey="cloudCover"
               stroke="url(#cloudCoverGradient)"
-              strokeWidth={4}
+              strokeWidth={3}
               dot={false}
             />
             <ReferenceLine

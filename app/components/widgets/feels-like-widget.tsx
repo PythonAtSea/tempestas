@@ -29,7 +29,7 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
     ? `linear-gradient(to right, ${apparentColor} 0%, ${actualColor} 100%)`
     : `linear-gradient(to right, ${actualColor} 0%, ${apparentColor} 100%)`;
 
-  const chartData = weatherData.hourly.time
+  const chartData = weatherData.minutely_15.time
     .filter((time) => {
       const date = new Date(time);
       const now = new Date();
@@ -37,8 +37,8 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
     })
     .map((time, index) => ({
       time: new Date(time),
-      feelsLike: weatherData.hourly.apparent_temperature[index],
-      actual: weatherData.hourly.temperature_2m[index],
+      feelsLike: weatherData.minutely_15.apparent_temperature[index],
+      actual: weatherData.minutely_15.temperature_2m[index],
     }));
 
   const allFeelsLikeTemps = chartData.map((d) => d.feelsLike);
@@ -101,7 +101,7 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
                 const displayHours = hours % 12 || 12;
                 return `${displayHours}${period}`;
               }}
-              interval={6}
+              interval={24}
             />
             <YAxis
               width="auto"
@@ -119,7 +119,7 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
               type="monotone"
               dataKey="feelsLike"
               stroke="url(#feelsLikeGradient)"
-              strokeWidth={4}
+              strokeWidth={3}
               dot={false}
               isAnimationActive={false}
               name="Feels Like"
@@ -127,8 +127,9 @@ export default function FeelsLikeWidget({ weatherData }: FeelsLikeWidgetProps) {
             <Line
               type="monotone"
               dataKey="actual"
-              strokeWidth={4}
-              stroke="#444"
+              strokeWidth={3}
+              stroke="currentColor"
+              strokeOpacity={0.5}
               dot={false}
               isAnimationActive={false}
               name="Actual"

@@ -276,16 +276,16 @@ export default function WindWidget({ weatherData }: WindWidgetProps) {
     </div>
   );
 
-  const chartData = weatherData.hourly.time
+  const chartData = weatherData.minutely_15.time
     .filter((time) => {
       const date = new Date(time);
       const now = new Date();
       return date.getDay() === now.getDay();
     })
     .map((timeStr, i) => {
-      const speed = weatherData.hourly.wind_speed_10m[i];
-      const gusts = weatherData.hourly.wind_gusts_10m[i];
-      const direction = weatherData.hourly.wind_direction_10m[i];
+      const speed = weatherData.minutely_15.wind_speed_10m[i];
+      const gusts = weatherData.minutely_15.wind_gusts_10m[i];
+      const direction = weatherData.minutely_15.wind_direction_10m[i];
       return {
         time: timeStr,
         speed: speed,
@@ -344,7 +344,7 @@ export default function WindWidget({ weatherData }: WindWidgetProps) {
             const displayHours = hours % 12 || 12;
             return `${displayHours}${period}`;
           }}
-          interval={6}
+          interval={24}
         />
         <YAxis
           domain={["dataMin - 2", "dataMax + 2"]}
@@ -356,7 +356,7 @@ export default function WindWidget({ weatherData }: WindWidgetProps) {
           type="monotone"
           dataKey="speed"
           stroke="url(#windGradient)"
-          strokeWidth={4}
+          strokeWidth={3}
           dot={false}
         />
         <Line
@@ -365,7 +365,7 @@ export default function WindWidget({ weatherData }: WindWidgetProps) {
           dataKey="gusts"
           stroke="currentColor"
           strokeOpacity={0.5}
-          strokeWidth={4}
+          strokeWidth={3}
           dot={false}
         />
         <ReferenceLine
