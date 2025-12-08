@@ -45,178 +45,184 @@ export default function Home() {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const refreshData = useCallback(
-    (signal?: AbortSignal) => {
+    async (signal?: AbortSignal) => {
       if (!coords) return;
+      try {
+        const elevationResponse = await fetch(
+          `https://api.open-meteo.com/v1/elevation?latitude=${coords.lat}&longitude=${coords.lon}`,
+          { signal }
+        );
+        const elevationData = await elevationResponse.json();
+        const elevation = elevationData.elevation ?? 0;
 
-      const weatherParams = new URLSearchParams({
-        latitude: coords.lat.toString(),
-        longitude: coords.lon.toString(),
-        daily: [
-          "weather_code",
-          "temperature_2m_max",
-          "temperature_2m_min",
-          "apparent_temperature_max",
-          "apparent_temperature_min",
-          "sunrise",
-          "sunset",
-          "wind_speed_10m_max",
-          "wind_direction_10m_dominant",
-          "wind_gusts_10m_max",
-          "daylight_duration",
-          "sunshine_duration",
-          "uv_index_max",
-          "uv_index_clear_sky_max",
-          "showers_sum",
-          "snowfall_sum",
-          "rain_sum",
-          "precipitation_sum",
-          "precipitation_hours",
-          "precipitation_probability_max",
-        ].join(","),
-        hourly: [
-          "temperature_2m",
-          "weather_code",
-          "apparent_temperature",
-          "relative_humidity_2m",
-          "dew_point_2m",
-          "pressure_msl",
-          "cloud_cover",
-          "visibility",
-          "precipitation",
-          "precipitation_probability",
-          "rain",
-          "showers",
-          "snowfall",
-          "snow_depth",
-          "wind_speed_10m",
-          "wind_gusts_10m",
-          "wind_direction_10m",
-          "surface_pressure",
-        ].join(","),
-        minutely_15: [
-          "temperature_2m",
-          "weather_code",
-          "apparent_temperature",
-          "relative_humidity_2m",
-          "dew_point_2m",
-          "pressure_msl",
-          "cloud_cover",
-          "visibility",
-          "precipitation",
-          "precipitation_probability",
-          "rain",
-          "showers",
-          "snowfall",
-          "snow_depth",
-          "wind_speed_10m",
-          "wind_gusts_10m",
-          "wind_direction_10m",
-          "surface_pressure",
-        ].join(","),
-        current: [
-          "temperature_2m",
-          "relative_humidity_2m",
-          "apparent_temperature",
-          "is_day",
-          "weather_code",
-          "wind_speed_10m",
-          "wind_direction_10m",
-          "wind_gusts_10m",
-          "precipitation",
-          "rain",
-          "showers",
-          "snowfall",
-          "cloud_cover",
-          "pressure_msl",
-          "surface_pressure",
-        ].join(","),
-        timezone: "auto",
-        past_days: "0",
-        forecast_days: "14",
-        wind_speed_unit: "mph",
-        temperature_unit: "fahrenheit",
-        precipitation_unit: "inch",
-      });
+        const weatherParams = new URLSearchParams({
+          latitude: coords.lat.toString(),
+          longitude: coords.lon.toString(),
+          elevation: elevation.toString(),
+          daily: [
+            "weather_code",
+            "temperature_2m_max",
+            "temperature_2m_min",
+            "apparent_temperature_max",
+            "apparent_temperature_min",
+            "sunrise",
+            "sunset",
+            "wind_speed_10m_max",
+            "wind_direction_10m_dominant",
+            "wind_gusts_10m_max",
+            "daylight_duration",
+            "sunshine_duration",
+            "uv_index_max",
+            "uv_index_clear_sky_max",
+            "showers_sum",
+            "snowfall_sum",
+            "rain_sum",
+            "precipitation_sum",
+            "precipitation_hours",
+            "precipitation_probability_max",
+          ].join(","),
+          hourly: [
+            "temperature_2m",
+            "weather_code",
+            "apparent_temperature",
+            "relative_humidity_2m",
+            "dew_point_2m",
+            "pressure_msl",
+            "cloud_cover",
+            "visibility",
+            "precipitation",
+            "precipitation_probability",
+            "rain",
+            "showers",
+            "snowfall",
+            "snow_depth",
+            "wind_speed_10m",
+            "wind_gusts_10m",
+            "wind_direction_10m",
+            "surface_pressure",
+          ].join(","),
+          minutely_15: [
+            "temperature_2m",
+            "weather_code",
+            "apparent_temperature",
+            "relative_humidity_2m",
+            "dew_point_2m",
+            "pressure_msl",
+            "cloud_cover",
+            "visibility",
+            "precipitation",
+            "precipitation_probability",
+            "rain",
+            "showers",
+            "snowfall",
+            "snow_depth",
+            "wind_speed_10m",
+            "wind_gusts_10m",
+            "wind_direction_10m",
+            "surface_pressure",
+          ].join(","),
+          current: [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "apparent_temperature",
+            "is_day",
+            "weather_code",
+            "wind_speed_10m",
+            "wind_direction_10m",
+            "wind_gusts_10m",
+            "precipitation",
+            "rain",
+            "showers",
+            "snowfall",
+            "cloud_cover",
+            "pressure_msl",
+            "surface_pressure",
+          ].join(","),
+          timezone: "auto",
+          past_days: "0",
+          forecast_days: "14",
+          wind_speed_unit: "mph",
+          temperature_unit: "fahrenheit",
+          precipitation_unit: "inch",
+        });
 
-      fetch(
-        `https://api.open-meteo.com/v1/forecast?${weatherParams.toString()}`,
-        { signal }
-      )
-        .then((response) => response.json())
-        .then((data: WeatherResponse) => {
-          setWeatherData(data);
-          const todayStart = new Date().setHours(0, 0, 0, 0);
-          const displayedIndices = data.daily.time
-            .map((time, i) => ({ time, i }))
-            .filter(({ time }) => new Date(time).getTime() > todayStart)
-            .map(({ i }) => i);
+        const WeatherResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?${weatherParams.toString()}`,
+          { signal }
+        );
+        const weatherData: WeatherResponse = await WeatherResponse.json();
+        setWeatherData(weatherData);
+        const todayStart = new Date().setHours(0, 0, 0, 0);
+        const displayedIndices = weatherData.daily.time
+          .map((time, i) => ({ time, i }))
+          .filter(({ time }) => new Date(time).getTime() > todayStart)
+          .map(({ i }) => i);
 
-          const displayedMins = displayedIndices.map(
-            (i) => data.daily.temperature_2m_min[i]
-          );
-          const displayedMaxs = displayedIndices.map(
-            (i) => data.daily.temperature_2m_max[i]
-          );
+        const displayedMins = displayedIndices.map(
+          (i) => weatherData.daily.temperature_2m_min[i]
+        );
+        const displayedMaxs = displayedIndices.map(
+          (i) => weatherData.daily.temperature_2m_max[i]
+        );
 
-          setMinTemp(Math.min(...(displayedMins.length ? displayedMins : [0])));
-          setMaxTemp(
-            Math.max(...(displayedMaxs.length ? displayedMaxs : [100]))
-          );
-          setMaxLowWidth(
-            Math.max(
-              ...(data.daily.temperature_2m_min.map((t) => {
-                return Math.round(t).toString().length;
-              }) ?? [2])
-            )
-          );
-          setMaxHighWidth(
-            Math.max(
-              ...(data.daily.temperature_2m_max.map((t) => {
-                return Math.round(t).toString().length;
-              }) ?? [2])
-            )
-          );
-          setLastRefresh(new Date());
-        })
-        .catch((err) => {
-          if (err?.name === "AbortError") return;
-          if (signal) {
-            console.error("Weather fetch error:", err);
-          } else {
-            setLocError(err.message || String(err));
+        setMinTemp(Math.min(...(displayedMins.length ? displayedMins : [0])));
+        setMaxTemp(Math.max(...(displayedMaxs.length ? displayedMaxs : [100])));
+        setMaxLowWidth(
+          Math.max(
+            ...(weatherData.daily.temperature_2m_min.map((t) => {
+              return Math.round(t).toString().length;
+            }) ?? [2])
+          )
+        );
+        setMaxHighWidth(
+          Math.max(
+            ...(weatherData.daily.temperature_2m_max.map((t) => {
+              return Math.round(t).toString().length;
+            }) ?? [2])
+          )
+        );
+        setLastRefresh(new Date());
+
+        fetch(
+          `https://api.weather.gov/alerts/active?point=${coords.lat},${coords.lon}`,
+          {
+            headers: {
+              "User-Agent": "(hiems, pythonatsea@duck.com)",
+            },
+            signal,
           }
-        });
+        )
+          .then((res) => res.json())
+          .then((data: AlertsResponse) => {
+            setAlertsData(data);
+          })
+          .catch((err) => {
+            if (err?.name === "AbortError") return;
+            console.error("Alerts fetch error:", err);
+          });
 
-      fetch(
-        `https://api.weather.gov/alerts/active?point=${coords.lat},${coords.lon}`,
-        {
-          headers: {
-            "User-Agent": "(hiems, pythonatsea@duck.com)",
-          },
-          signal,
+        fetch(
+          `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${coords.lat}&longitude=${coords.lon}&hourly=us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_nitrogen_dioxide,us_aqi_carbon_monoxide,us_aqi_ozone,us_aqi_sulphur_dioxide&forecast_days=1`,
+          { signal }
+        )
+          .then((res) => res.json())
+          .then((data: AirQualityResponse) => {
+            setAirQualityData(data);
+          })
+          .catch((err) => {
+            if (err?.name === "AbortError") return;
+            console.error("Air quality fetch error:", err);
+          });
+      } catch (err: unknown) {
+        const errName = (err as { name?: string })?.name;
+        if (errName === "AbortError") return;
+        if (signal) {
+          console.error("Weather fetch error:", err);
+        } else {
+          const message = err instanceof Error ? err.message : String(err);
+          setLocError(message);
         }
-      )
-        .then((res) => res.json())
-        .then((data: AlertsResponse) => {
-          setAlertsData(data);
-        })
-        .catch((err) => {
-          if (err?.name === "AbortError") return;
-          console.error("Alerts fetch error:", err);
-        });
-
-      fetch(
-        `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${coords.lat}&longitude=${coords.lon}&hourly=us_aqi,us_aqi_pm2_5,us_aqi_pm10,us_aqi_nitrogen_dioxide,us_aqi_carbon_monoxide,us_aqi_ozone,us_aqi_sulphur_dioxide&forecast_days=1`,
-        { signal }
-      )
-        .then((res) => res.json())
-        .then((data: AirQualityResponse) => {
-          setAirQualityData(data);
-        })
-        .catch((err) => {
-          if (err?.name === "AbortError") return;
-          console.error("Air quality fetch error:", err);
-        });
+      }
     },
     [coords]
   );
@@ -301,7 +307,10 @@ export default function Home() {
   useEffect(() => {
     if (!coords) return;
     const controller = new AbortController();
-    refreshData(controller.signal);
+    const { signal } = controller;
+
+    Promise.resolve().then(() => refreshData(signal));
+
     return () => controller.abort();
   }, [coords, refreshData]);
 
