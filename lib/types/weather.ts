@@ -12,6 +12,7 @@ export interface WeatherResponse {
   hourly: HourlyData;
   daily_units: DailyUnits;
   daily: DailyData;
+  minutely_15: fifteenMinuteData;
 }
 
 export interface CurrentUnits {
@@ -93,6 +94,29 @@ export interface HourlyData {
   snow_depth: number[];
   wind_speed_10m: number[];
   wind_gusts_10m: number[];
+  wind_direction_10m: number[];
+  surface_pressure: number[];
+}
+
+export interface fifteenMinuteData {
+  time: string[];
+  temperature_2m: number[];
+  weather_code: number[];
+  apparent_temperature: number[];
+  relative_humidity_2m: number[];
+  dew_point_2m: number[];
+  pressure_msl: number[];
+  cloud_cover: number[];
+  visibility: number[];
+  precipitation: number[];
+  precipitation_probability: number[];
+  rain: number[];
+  showers: number[];
+  snowfall: number[];
+  snow_depth: number[];
+  wind_speed_10m: number[];
+  wind_gusts_10m: number[];
+  wind_direction_10m: number[];
   surface_pressure: number[];
 }
 

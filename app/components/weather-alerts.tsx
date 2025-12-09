@@ -18,6 +18,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { AlertsResponse } from "@/lib/types/weather";
+import { ChevronRight } from "lucide-react";
 
 interface WeatherAlertsProps {
   alertsData: AlertsResponse | null;
@@ -50,13 +51,13 @@ export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
     features: [
       {
         properties: {
-          event: "Winter Storm Warning",
+          event: "[DEMO] Winter Storm Warning",
           headline:
-            "Winter Storm Warning issued November 30 at 10:00AM EST until December 1 at 6:00PM EST",
+            "[DEMO] Winter Storm Warning issued November 30 at 10:00AM EST until December 1 at 6:00PM EST",
           description:
-            "A significant winter storm is expected to impact the region. Heavy snow accumulations of 8 to 12 inches are expected.\n\nTravel could be very difficult to impossible. The hazardous conditions could impact the morning or evening commute.\n\nWinds gusting as high as 45 mph will cause blowing and drifting snow, significantly reducing visibility at times.",
+            "[DEMO] A significant winter storm is expected to impact the region. Heavy snow accumulations of 8 to 12 inches are expected.\n\nTravel could be very difficult to impossible. The hazardous conditions could impact the morning or evening commute.\n\nWinds gusting as high as 45 mph will cause blowing and drifting snow, significantly reducing visibility at times.",
           instruction:
-            "Travel should be restricted to emergencies only. If you must travel, keep an extra flashlight, food, and water in your vehicle in case of an emergency.",
+            "[DEMO] Travel should be restricted to emergencies only. If you must travel, keep an extra flashlight, food, and water in your vehicle in case of an emergency.",
           severity: "Severe",
           certainty: "Likely",
           urgency: "Immediate",
@@ -119,15 +120,13 @@ export default function WeatherAlerts({ alertsData }: WeatherAlertsProps) {
     headerBgClass: string,
     textClass: string
   ) => (
-    <div className="p-6 w-full pb-0">
+    <div className="p-6 w-full pb-0" suppressHydrationWarning>
       <div className={`border ${borderClass} w-full ${bgClass}`}>
         <div
-          className={`${headerBgClass} mt-0 p-2 px-4 ${textClass} flex flex-row`}
+          className={`${headerBgClass} mt-0 p-2 px-4 ${textClass} flex flex-row items-center`}
         >
           {alert.properties.event || "Weather Alert"}
-          <span className="ml-auto text-blue-600 cursor-pointer">
-            More details
-          </span>
+          <ChevronRight className="size-5 ml-auto" />
         </div>
         <p className="p-4">{alert.properties.headline || ""}</p>
       </div>
