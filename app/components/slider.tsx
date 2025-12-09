@@ -11,6 +11,7 @@ type SliderProps = {
   pillText?: ReactNode;
   pillBgColor?: string;
   pillTextColor?: string;
+  scaleGradient?: boolean;
 };
 
 export default function Slider({
@@ -18,19 +19,39 @@ export default function Slider({
   start,
   end,
   dotPercent,
-  dotColor = "#ffffff",
+  dotColor,
   className,
   pillPercent,
   pillText,
   pillBgColor = "#ffffff",
   pillTextColor = "#000000",
+  scaleGradient = false,
 }: SliderProps) {
   const defaultGradient =
     "linear-gradient(to right, #00a000 0%, #00a000 5%, #ffff00 33%, #ff0000 66%, #800080 95%, #800080 100%)";
-  const bg = gradient ?? defaultGradient;
+  const baseGradient = gradient ?? defaultGradient;
   const left = Math.max(0, Math.min(100, Math.min(start, end)));
   const right = Math.max(0, Math.min(100, Math.max(start, end)));
   const width = Math.max(0, right - left);
+
+  const getScaledGradient = () => {
+    if (!scaleGradient) return baseGradient;
+    return baseGradient;
+  };
+
+  const bg = getScaledGradient();
+  const getBackgroundStyle = () => {
+    if (!scaleGradient || width === 0) {
+      return { background: bg };
+    }
+    const scale = 100 / width;
+    const offsetPercent = (left / width) * 100;
+    return {
+      background: bg,
+      backgroundSize: `${scale * 100}% 100%`,
+      backgroundPosition: `-${offsetPercent}% 0`,
+    };
+  };
   const dot =
     dotPercent !== undefined
       ? Math.max(0, Math.min(100, dotPercent ?? 0))
@@ -40,16 +61,26 @@ export default function Slider({
       ? Math.max(left, Math.min(right, pillPercent ?? 0))
       : undefined;
 
-  const getPillBgColor = () => {
-    if (pill === undefined) return pillBgColor;
+  const getColorAtPosition = (percent: number, fallback: string) => {
+    const matchesWithStops = [
+      ...bg.matchAll(/(#[0-9a-fA-F]{3,6})\s*(\d{1,3})%/g),
+    ];
 
-    const matches = [...bg.matchAll(/(#[0-9a-fA-F]{3,6})\s*(\d{1,3})%/g)];
+    let colors: string[];
+    let stops: number[];
 
-    if (matches.length < 2) return pillBgColor;
+    if (matchesWithStops.length >= 2) {
+      colors = matchesWithStops.map((m) => m[1]);
+      stops = matchesWithStops.map((m) => parseInt(m[2]) / 100);
+    } else {
+      const colorMatches = [...bg.matchAll(/#[0-9a-fA-F]{3,6}/g)];
+      if (colorMatches.length < 2) return fallback;
 
-    const colors = matches.map((m) => m[1]);
-    const stops = matches.map((m) => parseInt(m[2]) / 100);
-    const gradientPercent = width === 0 ? 0 : (pill - left) / width;
+      colors = colorMatches.map((m) => m[0]);
+      stops = colors.map((_, i) => i / (colors.length - 1));
+    }
+
+    const gradientPercent = percent / 100;
 
     if (gradientPercent <= stops[0]) return colors[0];
     if (gradientPercent >= stops[stops.length - 1])
@@ -86,7 +117,27 @@ export default function Slider({
       }
     }
 
-    return pillBgColor;
+    return fallback;
+  };
+
+  const getPillBgColor = () => {
+    if (pill === undefined) return pillBgColor;
+    const gradientPercent = width === 0 ? 0 : ((pill - left) / width) * 100;
+    return getColorAtPosition(gradientPercent, pillBgColor);
+  };
+
+  const getDotColor = () => {
+    if (dotColor !== undefined) return dotColor;
+    if (dot === undefined) return "#ffffff";
+    if (scaleGradient && width === 0) {
+      const matchesWithStops = [
+        ...bg.matchAll(/(#[0-9a-fA-F]{3,6})\s*(\d{1,3})%/g),
+      ];
+      if (matchesWithStops.length > 0) return matchesWithStops[0][1];
+      const colorMatches = [...bg.matchAll(/#[0-9a-fA-F]{3,6}/g)];
+      if (colorMatches.length > 0) return colorMatches[0][0];
+    }
+    return getColorAtPosition(dot, "#ffffff");
   };
 
   return (
@@ -100,13 +151,13 @@ export default function Slider({
         style={{
           left: `${left}%`,
           width: `${width}%`,
-          background: bg,
+          ...getBackgroundStyle(),
         }}
       />
       {dot !== undefined && dotPercent !== null && (
         <div
           className="absolute top-1/2 rounded-full -translate-y-1/2 -translate-x-1/2 h-2.5 w-2.5 border-2 border-background"
-          style={{ left: `${dot}%`, backgroundColor: dotColor }}
+          style={{ left: `${dot}%`, backgroundColor: getDotColor() }}
         />
       )}
       {pill !== undefined && pillPercent !== null && pillText != null && (
@@ -116,9 +167,9 @@ export default function Slider({
             left: `${pill}%`,
             backgroundColor: getPillBgColor(),
             color: pillTextColor,
-            transform: `translateY(-50%) translateX(${
-              width === 0 ? -50 : -((pill - left) / width) * 100
-            }%)`,
+            transform: `translateY(-50%) translateX(calc(-${pill}% + calc(${
+              pill - 50
+            } * 12px / 100)))`,
           }}
         >
           {pillText}
