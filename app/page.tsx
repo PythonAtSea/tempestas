@@ -205,7 +205,7 @@ export default function Home() {
           `https://api.weather.gov/alerts/active?point=${coords.lat},${coords.lon}`,
           {
             headers: {
-              "User-Agent": "(hiems, pythonatsea@duck.com)",
+              "User-Agent": "(tempestas, pythonatsea@duck.com)",
             },
             signal,
           }

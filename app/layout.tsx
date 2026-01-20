@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hiems",
+  title: "Tempestas",
   description: "Mobile first FOSS weather site",
 };
 

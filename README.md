@@ -1,8 +1,8 @@
-# Hiems
+# Tempestas
 
 ## About
 
-Hiems is a mobile first weather site. >95% of the development was done using chrome devtools to simulate a mobile device, and I also used a actual phone to validate that everything worked well. It _works_ on desktop, but it's primarily for mobile users. It's design was inspired by apple weather. It has hourly and daily forecasts, as well as a summary of the next 10 hours.
+Tempestas is a mobile first weather site. >95% of the development was done using chrome devtools to simulate a mobile device, and I also used a actual phone to validate that everything worked well. It _works_ on desktop, but it's primarily for mobile users. It's design was inspired by apple weather. It has hourly and daily forecasts, as well as a summary of the next 10 hours.
 
 <details>
 
