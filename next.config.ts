@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  env: {
+    NEXT_PUBLIC_COMMIT_SHA: process.env.CF_PAGES_COMMIT_SHA || "",
+  },
 };
 
 export default nextConfig;

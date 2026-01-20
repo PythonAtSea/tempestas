@@ -13,6 +13,7 @@ import HourlyForecast from "./components/hourly-forecast";
 import DailyForecast from "./components/daily-forecast";
 import WeatherWidgets from "./components/weather-widgets";
 import LastRefresh from "./components/last-refresh";
+import CommitInfo from "./components/commit-info";
 import { Heart } from "lucide-react";
 
 interface StoredLocation {
@@ -412,7 +413,7 @@ export default function Home() {
           )}
         </>
       )}
-      <p className="self-start ml-6 my-2 text-xs text-muted-foreground">
+      <p className="self-start ml-6 mt-2 text-xs text-muted-foreground">
         Weather data from{" "}
         <a
           href="https://open-meteo.com"
@@ -423,7 +424,7 @@ export default function Home() {
           Open-Meteo
         </a>
       </p>
-      <p className="self-start ml-6 mb-2 text-xs text-muted-foreground">
+      <p className="self-start ml-6 text-xs text-muted-foreground">
         Geocoding provided by{" "}
         <a
           href="https://geocode.arcgis.com/arcgis/"
@@ -434,7 +435,10 @@ export default function Home() {
           ArcGIS
         </a>
       </p>
-      <p className="self-start ml-6 mb-6">
+      <p className="self-start ml-6 text-xs text-muted-foreground">
+        <CommitInfo />
+      </p>
+      <p className="self-start ml-6 mt-4 mb-6 text-xs text-muted-foreground">
         Made with{" "}
         <Heart className="inline size-4 text-red-700 animate-pulse mx-1" /> by{" "}
         <a
